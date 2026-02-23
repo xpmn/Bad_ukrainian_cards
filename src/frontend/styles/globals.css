@@ -1,4 +1,7 @@
-/* Global styles — expanded in task 3.x */
+/* ═══════════════════════════════════════════════
+   Global styles — Bad Cards (Погані Картки)
+   ═══════════════════════════════════════════════ */
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -6,14 +9,802 @@
 }
 
 :root {
-  --color-black: #1a1a1a;
-  --color-white: #f5f5f0;
-  --color-accent: #e63946;
-  --font-main: system-ui, sans-serif;
+  /* Colours */
+  --c-bg:           #111111;
+  --c-bg-surface:   #1c1c1c;
+  --c-bg-elevated:  #242424;
+  --c-border:       #2e2e2e;
+  --c-text:         #f0ede8;
+  --c-text-muted:   #888888;
+  --c-accent:       #e63946;
+  --c-accent-hover: #c1121f;
+  --c-success:      #2dc653;
+  --c-warning:      #f4a261;
+  --c-white-card:   #f5f5f0;
+  --c-black-card:   #131313;
+
+  /* Typography */
+  --font-main:    'Inter', system-ui, sans-serif;
+  --font-card:    Georgia, 'Times New Roman', serif;
+
+  /* Spacing */
+  --sp-xs:  4px;
+  --sp-sm:  8px;
+  --sp-md:  16px;
+  --sp-lg:  24px;
+  --sp-xl:  40px;
+  --sp-2xl: 64px;
+
+  /* Borders */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-card: 12px;
+
+  /* Shadows */
+  --shadow-sm:   0 2px 4px rgba(0,0,0,.5);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.6);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,.7);
+  --shadow-card: 0 6px 20px rgba(0,0,0,.8);
+
+  /* Card dimensions */
+  --card-w:  160px;
+  --card-h:  240px;
+  --card-w-sm: 120px;
+  --card-h-sm: 180px;
+
+  /* Transitions */
+  --transition: 0.2s ease;
+}
+
+/* ── Reset & base ───────────────────────────── */
+
+html, body {
+  height: 100%;
 }
 
 body {
-  background: var(--color-black);
-  color: var(--color-white);
+  background: var(--c-bg);
+  color: var(--c-text);
   font-family: var(--font-main);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
+
+a {
+  color: var(--c-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  outline: none;
+}
+
+/* ── App shell ──────────────────────────────── */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Layout helpers ─────────────────────────── */
+
+.center-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-lg);
+}
+
+.card-table {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+}
+
+/* ── Buttons ────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-lg);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  user-select: none;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-primary {
+  background: var(--c-accent);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--c-accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--c-bg-elevated);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--c-border);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--c-text-muted);
+  padding: var(--sp-xs) var(--sp-sm);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--c-text);
+  background: var(--c-bg-elevated);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--c-accent);
+  border: 1px solid var(--c-accent);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--c-accent);
+  color: #fff;
+}
+
+.btn-sm {
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: 0.85rem;
+}
+
+.btn-lg {
+  padding: var(--sp-md) var(--sp-xl);
+  font-size: 1.1rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ── Form controls ──────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input {
+  background: var(--c-bg-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  color: var(--c-text);
+  padding: var(--sp-sm) var(--sp-md);
+  font-size: 1rem;
+  transition: border-color var(--transition);
+  width: 100%;
+}
+
+.input::placeholder {
+  color: var(--c-text-muted);
+}
+
+.input:focus {
+  border-color: var(--c-accent);
+}
+
+.input.error {
+  border-color: var(--c-accent);
+}
+
+.select {
+  background: var(--c-bg-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  color: var(--c-text);
+  padding: var(--sp-sm) var(--sp-md);
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  appearance: none;
+}
+
+.field-error {
+  font-size: 0.8rem;
+  color: var(--c-accent);
+  margin-top: var(--sp-xs);
+}
+
+/* ── Cards ──────────────────────────────────── */
+
+.card {
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--radius-card);
+  padding: var(--sp-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-card);
+  cursor: default;
+  user-select: none;
+  position: relative;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.card.selectable {
+  cursor: pointer;
+}
+
+.card.selectable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.8);
+}
+
+.card.selected {
+  transform: translateY(-14px);
+  box-shadow: 0 16px 48px rgba(230,57,70,.5);
+  outline: 3px solid var(--c-accent);
+}
+
+.card-black {
+  background: var(--c-black-card);
+  color: var(--c-white-card);
+  border: 3px solid var(--c-white-card);
+}
+
+.card-white {
+  background: var(--c-white-card);
+  color: #111;
+  border: 1px solid #ccc;
+}
+
+.card-back {
+  background: var(--c-black-card);
+  border: 3px solid var(--c-white-card);
+}
+
+.card-text {
+  font-family: var(--font-card);
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.card-text-sm {
+  font-size: 0.85rem;
+}
+
+.card-logo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.card-pick {
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Hand ───────────────────────────────────── */
+
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  padding: var(--sp-lg);
+  justify-content: center;
+}
+
+/* ── Score board ────────────────────────────── */
+
+.scoreboard {
+  background: var(--c-bg-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.scoreboard-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.scoreboard-row:last-child {
+  border-bottom: none;
+}
+
+.scoreboard-rank {
+  font-size: 0.75rem;
+  color: var(--c-text-muted);
+  min-width: 20px;
+}
+
+.scoreboard-name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.scoreboard-points {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--c-accent);
+}
+
+/* ── Player list ────────────────────────────── */
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  background: var(--c-bg-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--c-border);
+}
+
+.player-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--c-bg-elevated);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.player-name {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.player-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-host {
+  background: var(--c-accent);
+  color: #fff;
+}
+
+.badge-bot {
+  background: var(--c-bg-elevated);
+  color: var(--c-text-muted);
+  border: 1px solid var(--c-border);
+}
+
+.badge-offline {
+  background: rgba(255,255,255,.05);
+  color: var(--c-text-muted);
+}
+
+.badge-you {
+  background: rgba(44,198,83,.15);
+  color: var(--c-success);
+}
+
+.badge-hetman {
+  background: rgba(244,162,97,.15);
+  color: var(--c-warning);
+}
+
+.badge-submitted {
+  background: rgba(44,198,83,.15);
+  color: var(--c-success);
+}
+
+/* ── Toast ──────────────────────────────────── */
+
+.toast-container {
+  position: fixed;
+  bottom: var(--sp-lg);
+  right: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  font-size: 0.9rem;
+  max-width: 300px;
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+}
+
+.toast-info    { border-left: 3px solid var(--c-text-muted); }
+.toast-success { border-left: 3px solid var(--c-success); }
+.toast-error   { border-left: 3px solid var(--c-accent); }
+.toast-warning { border-left: 3px solid var(--c-warning); }
+
+/* ── Connection overlay ─────────────────────── */
+
+.conn-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+.conn-overlay-inner {
+  background: var(--c-bg-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-xl);
+  text-align: center;
+  max-width: 320px;
+}
+
+.conn-overlay-inner .spinner {
+  margin: 0 auto var(--sp-md);
+}
+
+/* ── Spinner ────────────────────────────────── */
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--c-border);
+  border-top-color: var(--c-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Lobby page ─────────────────────────────── */
+
+.lobby-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--sp-xl) var(--sp-lg);
+  width: 100%;
+}
+
+.lobby-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-xl);
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+
+.room-code-badge {
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  font-family: monospace;
+}
+
+.lobby-section {
+  margin-bottom: var(--sp-xl);
+}
+
+.lobby-section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--c-text-muted);
+  margin-bottom: var(--sp-md);
+}
+
+.lobby-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+/* ── Game page ──────────────────────────────── */
+
+.game-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  grid-template-rows: 64px 1fr auto;
+  grid-template-areas:
+    "header  header"
+    "main    sidebar"
+    "hand    sidebar";
+}
+
+.game-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-lg);
+  background: var(--c-bg-surface);
+  border-bottom: 1px solid var(--c-border);
+  font-size: 0.9rem;
+  gap: var(--sp-md);
+}
+
+.game-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-lg);
+  gap: var(--sp-xl);
+  overflow-y: auto;
+}
+
+.game-sidebar {
+  grid-area: sidebar;
+  background: var(--c-bg-surface);
+  border-left: 1px solid var(--c-border);
+  overflow-y: auto;
+  padding: var(--sp-md);
+}
+
+.game-hand {
+  grid-area: hand;
+  border-top: 1px solid var(--c-border);
+  background: var(--c-bg-surface);
+  padding: var(--sp-md);
+}
+
+.status-bar {
+  font-size: 0.9rem;
+  color: var(--c-text-muted);
+  text-align: center;
+  padding: var(--sp-sm) var(--sp-md);
+}
+
+.phase-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: var(--sp-sm);
+}
+
+/* ── Home page ──────────────────────────────── */
+
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-lg);
+  gap: var(--sp-xl);
+}
+
+.home-logo {
+  text-align: center;
+}
+
+.home-logo h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.home-logo p {
+  color: var(--c-text-muted);
+  margin-top: var(--sp-sm);
+  font-size: 1rem;
+}
+
+.home-forms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-xl);
+  width: 100%;
+  max-width: 600px;
+}
+
+@media (max-width: 540px) {
+  .home-forms {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-form-panel {
+  background: var(--c-bg-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.home-form-panel h2 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.lang-switcher {
+  display: flex;
+  gap: var(--sp-sm);
+}
+
+/* ── Game settings panel ────────────────────── */
+
+.settings-panel {
+  background: var(--c-bg-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.settings-panel h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-text-muted);
+  margin-bottom: var(--sp-xs);
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.checkbox-field input[type="checkbox"] {
+  accent-color: var(--c-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* ── Submission pile ────────────────────────── */
+
+.submission-pile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+  justify-content: center;
+  padding: var(--sp-md);
+}
+
+.submission-card-wrapper {
+  position: relative;
+}
+
+/* ── Game over ──────────────────────────────── */
+
+.game-over-screen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-lg);
+  padding: var(--sp-xl);
+}
+
+/* ── Divider ────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--c-border);
+  margin: var(--sp-md) 0;
+}
+
+/* ── Utility ────────────────────────────────── */
+
+.text-muted  { color: var(--c-text-muted); }
+.text-accent { color: var(--c-accent); }
+.text-success { color: var(--c-success); }
+.text-sm     { font-size: 0.875rem; }
+.text-xs     { font-size: 0.75rem; }
+.text-bold   { font-weight: 700; }
+.text-center { text-align: center; }
+
+.mt-sm  { margin-top: var(--sp-sm); }
+.mt-md  { margin-top: var(--sp-md); }
+.mt-lg  { margin-top: var(--sp-lg); }
+
+.flex        { display: flex; }
+.items-center { align-items: center; }
+.gap-sm      { gap: var(--sp-sm); }
+.gap-md      { gap: var(--sp-md); }
+
+/* ── Responsive: mobile game layout ─────────── */
+
+@media (max-width: 700px) {
+  .game-page {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main"
+      "hand"
+      "sidebar";
+  }
+
+  .game-sidebar {
+    border-left: none;
+    border-top: 1px solid var(--c-border);
+  }
+
+  .card {
+    --card-w: var(--card-w-sm);
+    --card-h: var(--card-h-sm);
+  }
+}
+

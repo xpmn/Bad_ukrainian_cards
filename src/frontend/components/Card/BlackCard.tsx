@@ -1,8 +1,17 @@
-// Black card — implemented in task 3.6
+import { t } from "@lib/i18n";
+
 interface BlackCardProps {
   text: string;
+  /** Animate in on mount */
+  animate?: boolean;
+  className?: string;
 }
 
-export function BlackCard({ text }: BlackCardProps) {
-  return <div className="black-card">{text}</div>;
+export function BlackCard({ text, animate = false, className = "" }: BlackCardProps) {
+  return (
+    <div className={`card card-black ${animate ? "anim-zoom-in" : ""} ${className}`}>
+      <span className="card-text">{text}</span>
+      <span className="card-logo">{t("app.title")}</span>
+    </div>
+  );
 }

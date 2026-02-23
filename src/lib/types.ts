@@ -60,6 +60,8 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
 // --------------- Submission ------------------
 
 export interface Submission {
+  /** Opaque id shown to the Hetman during judging — does not reveal playerId. */
+  anonymousId: string;
   playerId: string;
   card: string;
   isWinner: boolean;

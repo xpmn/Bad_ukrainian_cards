@@ -189,12 +189,12 @@ Endpoints (all return JSON):
 | `GET`  | `/api/rooms/:id` | Get public room info (phase, player count, hasPassword). No auth needed. |
 | `GET`  | `/*` | Serve `index.html` (SPA fallback) |
 
-- [ ] Move server bootstrap into `src/server/index.ts`
-- [ ] Implement `POST /api/rooms` — generate 6-char room code, create `Room` object, store in in-memory `Map<string, Room>`, return tokens
-- [ ] Implement `POST /api/rooms/:id/join` — validate password if set, add player, return token
-- [ ] Implement `GET /api/rooms/:id` — return sanitized public room data
-- [ ] Input validation with proper HTTP error responses (400, 401, 404, 409)
-- [ ] Rate limiting: max 5 rooms created per IP per minute (simple in-memory counter)
+- [x] Move server bootstrap into `src/server/index.ts`
+- [x] Implement `POST /api/rooms` — generate 6-char room code, create `Room` object, store in in-memory `Map<string, Room>`, return tokens
+- [x] Implement `POST /api/rooms/:id/join` — validate password if set, add player, return token
+- [x] Implement `GET /api/rooms/:id` — return sanitized public room data
+- [x] Input validation with proper HTTP error responses (400, 401, 404, 409)
+- [x] Rate limiting: max 5 rooms created per IP per minute (simple in-memory counter)
 
 **Technologies:** Bun `serve()`, built-in `Request`/`Response`
 
@@ -206,9 +206,9 @@ Endpoints (all return JSON):
 WebSocket upgrade is handled on the same Bun server.
 
 #### Connection lifecycle
-- [ ] Upgrade `GET /ws?roomId=&token=` to WebSocket
-- [ ] On open: validate token → find player → mark `isConnected = true` → broadcast `player_reconnected` to room
-- [ ] On close: mark `isConnected = false` → broadcast `player_disconnected` → start 5 min reconnect grace timer; if timer expires and player is still disconnected, replace with bot
+- [x] Upgrade `GET /ws?roomId=&token=` to WebSocket
+- [x] On open: validate token → find player → mark `isConnected = true` → broadcast `player_reconnected` to room
+- [x] On close: mark `isConnected = false` → broadcast `player_disconnected` → start 5 min reconnect grace timer; if timer expires and player is still disconnected, replace with bot
 
 #### Event types (`src/server/ws/events.ts`)
 Define constant maps for all client→server and server→client event names.
@@ -246,9 +246,9 @@ Define constant maps for all client→server and server→client event names.
 | `error` | `{ code: string, message: string }` | Server error |
 | `pong` | — | Keepalive reply |
 
-- [ ] Implement message dispatcher in `src/server/ws/handler.ts`
-- [ ] Each handler validates payload shape before processing
-- [ ] Use `ws.subscribe(roomId)` / `server.publish(roomId, msg)` for room broadcasting (Bun pub/sub)
+- [x] Implement message dispatcher in `src/server/ws/handler.ts`
+- [x] Each handler validates payload shape before processing
+- [x] Use `ws.subscribe(roomId)` / `server.publish(roomId, msg)` for room broadcasting (Bun pub/sub)
 
 **Technologies:** Bun WebSocket API (`server.upgrade`, `ws.subscribe`, `server.publish`)
 
@@ -263,48 +263,48 @@ State machine governing game phase transitions:
 lobby → dealing → submitting → judging → reveal → roundEnd → (next round OR gameOver)
 ```
 
-- [ ] `startGame(room)` — validate ≥3 players, shuffle decks, deal 10 cards each, set Hetman, transition to `dealing`
-- [ ] `dealCards(room)` — refill each player's hand to 10 cards, draw black card, broadcast `round_start` + `cards_dealt`
-- [ ] `submitCard(room, playerId, card)` — validate phase is `submitting`, validate card is in player's hand, add to submissions, remove card from hand, check if all non-Hetman players submitted → auto-advance to `judging`
-- [ ] `selectWinner(room, hetmanId, targetPlayerId)` — validate caller is Hetman and phase is `judging`, award point, transition to `reveal` then `roundEnd`
-- [ ] `advanceRound(room)` — rotate Hetman (if `rotateHetman: true`), increment round, check if `currentRound >= maxRounds` → `gameOver`; else → `dealing`
-- [ ] `endGame(room)` — compute final scores, broadcast `game_over`, clean up timers
-- [ ] All state transitions emit the appropriate WS events
+- [x] `startGame(room)` — validate ≥3 players, shuffle decks, deal 10 cards each, set Hetman, transition to `dealing`
+- [x] `dealCards(room)` — refill each player's hand to 10 cards, draw black card, broadcast `round_start` + `cards_dealt`
+- [x] `submitCard(room, playerId, card)` — validate phase is `submitting`, validate card is in player's hand, add to submissions, remove card from hand, check if all non-Hetman players submitted → auto-advance to `judging`
+- [x] `selectWinner(room, hetmanId, targetPlayerId)` — validate caller is Hetman and phase is `judging`, award point, transition to `reveal` then `roundEnd`
+- [x] `advanceRound(room)` — rotate Hetman (if `rotateHetman: true`), increment round, check if `currentRound >= maxRounds` → `gameOver`; else → `dealing`
+- [x] `endGame(room)` — compute final scores, broadcast `game_over`, clean up timers
+- [x] All state transitions emit the appropriate WS events
 
 ---
 
 ### 2.4 Room & Session Management (`src/server/game/room.ts`)
 **Priority:** P0
 
-- [ ] In-memory store: `const rooms = new Map<string, Room>()`
-- [ ] `createRoom(hostName, settings)` → `Room`
-- [ ] `joinRoom(roomId, playerName, password?)` → `Player` or throw
-- [ ] `getPublicRoom(roomId)` — strips tokens and private hand data
-- [ ] `getRoomForPlayer(token)` — find room by player token
-- [ ] Reconnect: `reconnectPlayer(token, ws)` — find player by token, re-attach socket
-- [ ] Separation of concern: room.ts only manages data; engine.ts drives state changes
+- [x] In-memory store: `const rooms = new Map<string, Room>()`
+- [x] `createRoom(hostName, settings)` → `Room`
+- [x] `joinRoom(roomId, playerName, password?)` → `Player` or throw
+- [x] `getPublicRoom(roomId)` — strips tokens and private hand data
+- [x] `getRoomForPlayer(token)` — find room by player token
+- [x] Reconnect: `reconnectPlayer(token, ws)` — find player by token, re-attach socket
+- [x] Separation of concern: room.ts only manages data; engine.ts drives state changes
 
 ---
 
 ### 2.5 AI Bot Logic (`src/server/game/bot.ts`)
 **Priority:** P1
 
-- [ ] `createBot(room)` — add bot player with `isBot: true`, name pattern `"Bot #{n} (AI)"`
-- [ ] `scheduleBotTurn(room, botId)` — after a random delay (3–8 s to feel natural), bot picks a random card from hand and submits
-- [ ] `scheduleBotHetmanTurn(room, botId)` — bot picks a random submission as winner after 5–10 s delay
-- [ ] Bots do not participate in chat
-- [ ] When a human player is replaced by a bot (`remove_player` event), existing player data (points, cards) is preserved and assigned to the new bot
+- [x] `createBot(room)` — add bot player with `isBot: true`, name pattern `"Bot #{n} (AI)"`
+- [x] `scheduleBotTurn(room, botId)` — after a random delay (3–8 s to feel natural), bot picks a random card from hand and submits
+- [x] `scheduleBotHetmanTurn(room, botId)` — bot picks a random submission as winner after 5–10 s delay
+- [x] Bots do not participate in chat
+- [x] When a human player is replaced by a bot (`remove_player` event), existing player data (points, cards) is preserved and assigned to the new bot
 
 ---
 
 ### 2.6 Session Timers (`src/server/game/timers.ts`)
 **Priority:** P1
 
-- [ ] **Submission timer**: if `settings.submissionTimeLimitSec` is set, start a countdown when `submitting` phase begins; when it fires, auto-submit a random card for any player who hasn't submitted yet
-- [ ] **Inactivity timer**: reset on every WS message received in a room; if 15 minutes pass with no activity → call `endGame(room)` with reason `'inactivity'`
-- [ ] **Session time limit**: when `startGame` is called, start a 1-hour timer; when it fires → call `endGame(room)` with reason `'time_limit'`
-- [ ] **Reconnect grace timer**: when a player disconnects, wait 5 minutes; if still offline → replace with bot
-- [ ] All timers stored on the `Room` object (`timers: Record<string, Timer>`) and cleared when room ends
+- [x] **Submission timer**: if `settings.submissionTimeLimitSec` is set, start a countdown when `submitting` phase begins; when it fires, auto-submit a random card for any player who hasn't submitted yet
+- [x] **Inactivity timer**: reset on every WS message received in a room; if 15 minutes pass with no activity → call `endGame(room)` with reason `'inactivity'`
+- [x] **Session time limit**: when `startGame` is called, start a 1-hour timer; when it fires → call `endGame(room)` with reason `'time_limit'`
+- [x] **Reconnect grace timer**: when a player disconnects, wait 5 minutes; if still offline → replace with bot
+- [x] All timers stored on the `Room` object (`timers: Record<string, Timer>`) and cleared when room ends
 
 ---
 
@@ -313,7 +313,7 @@ lobby → dealing → submitting → judging → reveal → roundEnd → (next r
 ### 3.1 App Shell & Hash Router (`src/frontend/App.tsx`)
 **Priority:** P0
 
-- [ ] Implement hash-based router purely in React (no `react-router`):
+- [] Implement hash-based router purely in React (no `react-router`):
   ```
   /#/            → HomePage
   /#/lobby/:id   → LobbyPage
