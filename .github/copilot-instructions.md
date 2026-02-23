@@ -65,4 +65,4 @@ When acting as an agent:
 - Propose changes before implementing
 - Never introduce new dependencies silently
 - If uncertain, present 2–3 options with trade-offs
-
+- never run dev script, pretend that dev environment is already running and you can see the app in the browser

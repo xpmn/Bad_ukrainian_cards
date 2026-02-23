@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { wsService } from "./wsService";
+import { t } from "@lib/i18n";
 import type {
   PublicRoom,
   Player,
@@ -323,6 +324,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       wsService.on(EVENTS.ROUND_START, raw => {
         const p = raw as { blackCard: string; hetmanId: string; round: number };
         dispatch({ type: "ROUND_START", ...p });
+        dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.round_start", undefined, { round: String(p.round) }), type: "info" } });
       }),
       wsService.on(EVENTS.CARDS_DEALT, raw => {
         const p = raw as { hand: string[] };
@@ -335,6 +337,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       wsService.on(EVENTS.WINNER_SELECTED, raw => {
         const p = raw as { submission: Submission; playerName: string };
         dispatch({ type: "WINNER_SELECTED", submission: p.submission, playerName: p.playerName });
+        dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.winner_announced", undefined, { name: p.playerName }), type: "success" } });
       }),
       wsService.on(EVENTS.ROUND_END, raw => {
         const p = raw as { scores: Score[] };
@@ -347,10 +350,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       wsService.on(EVENTS.PLAYER_JOINED, raw => {
         const p = raw as { player: PublicPlayer };
         dispatch({ type: "PLAYER_JOINED", player: p.player });
+        dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.player_joined", undefined, { name: p.player.name }), type: "info" } });
       }),
       wsService.on(EVENTS.PLAYER_RECONNECTED, raw => {
         const p = raw as { playerId: string };
         dispatch({ type: "PLAYER_RECONNECTED", playerId: p.playerId });
+        // We don't have the name here; the room state update will follow
       }),
       wsService.on(EVENTS.PLAYER_DISCONNECTED, raw => {
         const p = raw as { playerId: string };
@@ -359,10 +364,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       wsService.on(EVENTS.PLAYER_REPLACED_BY_BOT, raw => {
         const p = raw as { playerId: string; botId: string; botName: string };
         dispatch({ type: "PLAYER_REPLACED_BY_BOT", playerId: p.playerId, botId: p.botId, botName: p.botName });
+        dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.replaced_by_bot", undefined, { name: p.botName }), type: "warning" } });
       }),
       wsService.on(EVENTS.SETTINGS_UPDATED, raw => {
         const p = raw as { settings: GameSettings };
         dispatch({ type: "SETTINGS_UPDATED", settings: p.settings });
+        dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.settings_updated"), type: "info" } });
       }),
     ];
 
@@ -377,7 +384,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const addToast = useCallback((message: string, type: Toast["type"] = "info") => {
     const id = toastId();
     dispatch({ type: "ADD_TOAST", toast: { id, message, type } });
-    setTimeout(() => dispatch({ type: "REMOVE_TOAST", id }), 5000);
   }, []);
 
   const dismissToast = useCallback((id: string) => {

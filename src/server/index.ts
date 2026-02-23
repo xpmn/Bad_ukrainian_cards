@@ -10,6 +10,12 @@ const PORT = Number(process.env["PORT"] ?? 3000);
 const server = serve<WsData>({
   port: PORT,
 
+  // Serve the HTML bundle (with HMR in dev) at every non-API path.
+  // Using Bun's native static routing avoids the [object HTMLBundle] issue.
+  routes: {
+    "/": index,
+  },
+
   fetch(req, srv) {
     const url = new URL(req.url);
 
@@ -49,10 +55,8 @@ const server = serve<WsData>({
       return handleGetRoom(roomMatch[1]!);
     }
 
-    // ── SPA fallback ──────────────────────────────────────────────────────────
-    return new Response(index as unknown as BodyInit, {
-      headers: { "Content-Type": "text/html" },
-    });
+    // All other paths fall through to the static "/" SPA shell above.
+    return new Response("Not found", { status: 404 });
   },
 
   websocket: {

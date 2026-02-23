@@ -768,9 +768,10 @@ input, select, textarea {
 
 /* ── Utility ────────────────────────────────── */
 
-.text-muted  { color: var(--c-text-muted); }
-.text-accent { color: var(--c-accent); }
+.text-muted   { color: var(--c-text-muted); }
+.text-accent  { color: var(--c-accent); }
 .text-success { color: var(--c-success); }
+.text-warning { color: var(--c-warning); }
 .text-sm     { font-size: 0.875rem; }
 .text-xs     { font-size: 0.75rem; }
 .text-bold   { font-weight: 700; }
