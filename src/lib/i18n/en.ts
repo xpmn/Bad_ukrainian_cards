@@ -1,4 +1,149 @@
-// English translations — populated in task 1.4
-export const en = {} as const;
+import type { TranslationKey } from "./uk";
 
-export type EnTranslations = typeof en;
+// English translations — keys must match uk.ts exactly.
+export const en: Record<TranslationKey, string> = {
+  // ── General ─────────────────────────────────────────────
+  "app.title":        "Bad Cards",
+  "app.language":     "Language",
+  "app.lang.uk":      "Українська",
+  "app.lang.en":      "English",
+
+  // ── Home page ────────────────────────────────────────────
+  "home.hero":              "A game for horrible people with a great sense of humor",
+  "home.create_room":       "Create a room",
+  "home.join_room":         "Join a game",
+  "home.player_name":       "Your name",
+  "home.player_name.hint":  "What should we call you?",
+  "home.room_code":         "Room code",
+  "home.room_code.hint":    "6-character code",
+  "home.password":          "Password",
+  "home.password.hint":     "Leave empty if none",
+  "home.join":              "Join",
+  "home.create":            "Create",
+  "home.or":                "or",
+
+  // ── Game settings ────────────────────────────────────────
+  "settings.title":              "Game settings",
+  "settings.max_rounds":         "Number of rounds",
+  "settings.time_limit":         "Submission time limit",
+  "settings.time_limit.none":    "No limit",
+  "settings.time_limit.30":      "30 seconds",
+  "settings.time_limit.60":      "1 minute",
+  "settings.time_limit.90":      "1.5 minutes",
+  "settings.time_limit.120":     "2 minutes",
+  "settings.rotate_hetman":      "Rotate Card Czar each round",
+  "settings.allow_custom":       "Allow custom cards",
+  "settings.password":           "Room password",
+  "settings.password.hint":      "Optional",
+
+  // ── Lobby ────────────────────────────────────────────────
+  "lobby.title":          "Waiting room",
+  "lobby.room_code":      "Room code",
+  "lobby.copy_link":      "Copy link",
+  "lobby.copied":         "Copied!",
+  "lobby.waiting":        "Waiting for players…",
+  "lobby.start_game":     "Start game",
+  "lobby.add_bot":        "Add bot",
+  "lobby.min_players":    "At least 3 players required",
+  "lobby.max_players":    "Maximum 10 players",
+  "lobby.players":        "Players",
+  "lobby.settings":       "Settings",
+  "lobby.edit_settings":  "Edit settings",
+  "lobby.invite":         "Invite friends",
+
+  // ── Game phases ──────────────────────────────────────────
+  "phase.lobby":      "Waiting room",
+  "phase.dealing":    "Dealing cards",
+  "phase.submitting": "Submit your answer!",
+  "phase.judging":    "Card Czar is choosing",
+  "phase.reveal":     "Reveal",
+  "phase.roundEnd":   "End of round",
+  "phase.gameOver":   "Game over",
+
+  // ── Game page ────────────────────────────────────────────
+  "game.hetman":              "Card Czar",
+  "game.round":               "Round",
+  "game.of":                  "of",
+  "game.submit":              "Submit",
+  "game.cancel":              "Cancel",
+  "game.waiting_others":      "Waiting for other players…",
+  "game.waiting_hetman":      "Card Czar is picking a winner…",
+  "game.your_turn":           "Your turn — pick a card",
+  "game.you_are_hetman":      "You are the Card Czar! Play a black card.",
+  "game.pick_winner":         "Pick the best answer",
+  "game.winner_round":        "Round winner",
+  "game.points":              "points",
+  "game.point":               "point",
+  "game.next_round":          "Next round",
+  "game.game_over":           "Game over!",
+  "game.winner_overall":      "Game winner",
+  "game.play_again":          "Play again",
+  "game.submitted_count":     "{{count}} of {{total}} answers submitted",
+  "game.time_left":           "{{n}}s left",
+  "game.you_submitted":       "You submitted your card",
+  "game.waiting_for":         "Waiting for: {{names}}",
+  "game.scores":              "Scores",
+  "game.final_scores":        "Final scores",
+  "game.leave":               "Leave game",
+
+  // ── Player list ──────────────────────────────────────────
+  "player.replace_with_bot":  "Replace with bot",
+  "player.kick":              "Remove",
+  "player.host":              "Host",
+  "player.bot":               "Bot",
+  "player.offline":           "Offline",
+  "player.you":               "You",
+  "player.hetman":            "Card Czar",
+  "player.submitted":         "Answered",
+  "player.waiting":           "Waiting",
+
+  // ── Toast / events ───────────────────────────────────────
+  "toast.player_joined":       "{{name}} joined the game",
+  "toast.player_left":         "{{name}} disconnected",
+  "toast.player_reconnected":  "{{name}} reconnected",
+  "toast.replaced_by_bot":     "{{name}} was replaced by a bot",
+  "toast.round_start":         "Round {{round}} — let's go!",
+  "toast.winner_announced":    "{{name}} wins this round!",
+  "toast.game_time_limit":     "Time's up! Game over.",
+  "toast.game_inactivity":     "Game ended due to inactivity",
+  "toast.link_copied":         "Link copied to clipboard",
+  "toast.settings_updated":    "Settings updated",
+  "toast.game_starting":       "Game is starting!",
+
+  // ── Errors ───────────────────────────────────────────────
+  "error.room_not_found":        "Room not found",
+  "error.wrong_password":        "Wrong password",
+  "error.game_already_started":  "The game has already started",
+  "error.room_full":             "Room is full (max 10 players)",
+  "error.invalid_token":         "Session invalid — please rejoin",
+  "error.not_host":              "Only the host can do that",
+  "error.not_hetman":            "Only the Card Czar can pick a winner",
+  "error.card_not_in_hand":      "You don't have that card in your hand",
+  "error.already_submitted":     "You already submitted a card this round",
+  "error.not_enough_players":    "Not enough players (minimum 3 required)",
+  "error.generic":               "Something went wrong. Please try again.",
+  "error.name_required":         "Please enter your name",
+  "error.code_required":         "Please enter a room code",
+  "error.code_length":           "Room code must be 6 characters",
+  "error.connection_lost":       "Connection lost. Reconnecting…",
+
+  // ── Connection ───────────────────────────────────────────
+  "conn.connecting":    "Connecting…",
+  "conn.reconnecting":  "Reconnecting…",
+  "conn.disconnected":  "No connection",
+  "conn.connected":     "Connected",
+
+  // ── Misc ─────────────────────────────────────────────────
+  "misc.loading":     "Loading…",
+  "misc.back":        "Back",
+  "misc.close":       "Close",
+  "misc.confirm":     "Confirm",
+  "misc.cancel":      "Cancel",
+  "misc.yes":         "Yes",
+  "misc.no":          "No",
+  "misc.optional":    "optional",
+  "misc.points_n":    "{{n}} points",
+  "misc.round_n":     "Round {{n}}",
+  "misc.ai_suffix":   "(AI)",
+};
+

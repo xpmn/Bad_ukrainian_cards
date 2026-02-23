@@ -140,24 +140,24 @@ interface Submission {
 ### 1.3 Card Data (`src/lib/cards.ts`)
 **Priority:** P0
 
-- [ ] Create `src/lib/cards.ts` with:
+- [x] Create `src/lib/cards.ts` with:
   - `blackCards: string[]` — at least **90 black cards** in Ukrainian
   - `whiteCards: string[]` — at least **400 white cards** in Ukrainian
   - `blackCardsEn: string[]` — English equivalents (can be same set translated)
   - `whiteCardsEn: string[]`
-- [ ] Export helper functions:
+- [x] Export helper functions:
   ```typescript
   export function shuffleDeck<T>(deck: T[]): T[]
   export function dealCards(deck: string[], count: number): { hand: string[]; remaining: string[] }
   ```
-- [ ] Card format for black cards uses `_` as blank placeholder (e.g. `"Я люблю ___."`)
+- [x] Card format for black cards uses `_` as blank placeholder (e.g. `"Я люблю _."`)
 
 ---
 
 ### 1.4 i18n (`src/lib/i18n/`)
 **Priority:** P0 — all user-facing strings must go through i18n
 
-- [ ] Create a minimal i18n engine (no external dependency):
+- [x] Create a minimal i18n engine (no external dependency):
   ```typescript
   // src/lib/i18n/index.ts
   type Lang = 'uk' | 'en';
@@ -167,11 +167,11 @@ interface Submission {
   export function setLang(lang: Lang): void
   export function getLang(): Lang
   ```
-- [ ] `src/lib/i18n/uk.ts` — full Ukrainian string map
-- [ ] `src/lib/i18n/en.ts` — full English string map
-- [ ] Keys to cover: all UI labels, error messages, game phase announcements, player actions, toast notifications
-- [ ] On frontend: persist chosen language in `localStorage`
-- [ ] On frontend: expose `useLang()` React hook that triggers re-render on language change
+- [x] `src/lib/i18n/uk.ts` — full Ukrainian string map
+- [x] `src/lib/i18n/en.ts` — full English string map
+- [x] Keys to cover: all UI labels, error messages, game phase announcements, player actions, toast notifications
+- [x] On frontend: persist chosen language in `localStorage`
+- [x] On frontend: expose `useLang()` React hook that triggers re-render on language change
 
 ---
 

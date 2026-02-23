@@ -1,4 +1,151 @@
-// Ukrainian translations — populated in task 1.4
-export const uk = {} as const;
+// Ukrainian translation strings.
+// Variables use {{varName}} syntax.
+export const uk = {
+  // ── General ─────────────────────────────────────────────
+  "app.title":        "Погані Картки",
+  "app.language":     "Мова",
+  "app.lang.uk":      "Українська",
+  "app.lang.en":      "English",
+
+  // ── Home page ────────────────────────────────────────────
+  "home.hero":              "Гра для поганих людей з гарним почуттям гумору",
+  "home.create_room":       "Створити кімнату",
+  "home.join_room":         "Приєднатися до гри",
+  "home.player_name":       "Ваше ім'я",
+  "home.player_name.hint":  "Як вас звати?",
+  "home.room_code":         "Код кімнати",
+  "home.room_code.hint":    "6-символьний код",
+  "home.password":          "Пароль",
+  "home.password.hint":     "Лишіть порожнім, якщо немає",
+  "home.join":              "Приєднатися",
+  "home.create":            "Створити",
+  "home.or":                "або",
+
+  // ── Game settings ────────────────────────────────────────
+  "settings.title":              "Налаштування гри",
+  "settings.max_rounds":         "Кількість раундів",
+  "settings.time_limit":         "Ліміт часу на хід",
+  "settings.time_limit.none":    "Без ліміту",
+  "settings.time_limit.30":      "30 секунд",
+  "settings.time_limit.60":      "1 хвилина",
+  "settings.time_limit.90":      "1,5 хвилини",
+  "settings.time_limit.120":     "2 хвилини",
+  "settings.rotate_hetman":      "Змінювати Гетьмана щораунду",
+  "settings.allow_custom":       "Дозволити власні картки",
+  "settings.password":           "Пароль кімнати",
+  "settings.password.hint":      "Необов'язково",
+
+  // ── Lobby ────────────────────────────────────────────────
+  "lobby.title":          "Зала очікування",
+  "lobby.room_code":      "Код кімнати",
+  "lobby.copy_link":      "Копіювати посилання",
+  "lobby.copied":         "Скопійовано!",
+  "lobby.waiting":        "Очікуємо гравців…",
+  "lobby.start_game":     "Почати гру",
+  "lobby.add_bot":        "Додати бота",
+  "lobby.min_players":    "Потрібно щонайменше 3 гравці",
+  "lobby.max_players":    "Максимум 10 гравців",
+  "lobby.players":        "Гравці",
+  "lobby.settings":       "Налаштування",
+  "lobby.edit_settings":  "Змінити налаштування",
+  "lobby.invite":         "Запросити друзів",
+
+  // ── Game phases ──────────────────────────────────────────
+  "phase.lobby":      "Зала очікування",
+  "phase.dealing":    "Роздача карток",
+  "phase.submitting": "Відповідайте!",
+  "phase.judging":    "Гетьман обирає",
+  "phase.reveal":     "Розкриття",
+  "phase.roundEnd":   "Кінець раунду",
+  "phase.gameOver":   "Гра завершена",
+
+  // ── Game page ────────────────────────────────────────────
+  "game.hetman":              "Гетьман",
+  "game.round":               "Раунд",
+  "game.of":                  "з",
+  "game.submit":              "Відправити",
+  "game.cancel":              "Скасувати",
+  "game.waiting_others":      "Чекаємо інших гравців…",
+  "game.waiting_hetman":      "Гетьман обирає переможця…",
+  "game.your_turn":           "Ваш хід — оберіть картку",
+  "game.you_are_hetman":      "Ви — Гетьман! Зіграйте чорну картку.",
+  "game.pick_winner":         "Оберіть найкращу відповідь",
+  "game.winner_round":        "Переможець раунду",
+  "game.points":              "очок",
+  "game.point":               "очко",
+  "game.next_round":          "Наступний раунд",
+  "game.game_over":           "Гра завершена!",
+  "game.winner_overall":      "Переможець гри",
+  "game.play_again":          "Грати знову",
+  "game.submitted_count":     "{{count}} з {{total}} відповідей надіслано",
+  "game.time_left":           "Залишилось {{n}} с",
+  "game.you_submitted":       "Ви надіслали картку",
+  "game.waiting_for":         "Чекаємо: {{names}}",
+  "game.scores":              "Рахунок",
+  "game.final_scores":        "Фінальний рахунок",
+  "game.leave":               "Вийти з гри",
+
+  // ── Player list ──────────────────────────────────────────
+  "player.replace_with_bot":  "Замінити ботом",
+  "player.kick":              "Видалити",
+  "player.host":              "Хост",
+  "player.bot":               "Бот",
+  "player.offline":           "Офлайн",
+  "player.you":               "Ви",
+  "player.hetman":            "Гетьман",
+  "player.submitted":         "Відповів",
+  "player.waiting":           "Очікує",
+
+  // ── Toast / events ───────────────────────────────────────
+  "toast.player_joined":       "{{name}} приєднався до гри",
+  "toast.player_left":         "{{name}} відключився",
+  "toast.player_reconnected":  "{{name}} повернувся",
+  "toast.replaced_by_bot":     "{{name}} замінено ботом",
+  "toast.round_start":         "Раунд {{round}} — починаємо!",
+  "toast.winner_announced":    "{{name}} виграє цей раунд!",
+  "toast.game_time_limit":     "Час гри вичерпано!",
+  "toast.game_inactivity":     "Гра завершена через неактивність",
+  "toast.link_copied":         "Посилання скопійовано",
+  "toast.settings_updated":    "Налаштування оновлено",
+  "toast.game_starting":       "Гра починається!",
+
+  // ── Errors ───────────────────────────────────────────────
+  "error.room_not_found":        "Кімнату не знайдено",
+  "error.wrong_password":        "Невірний пароль",
+  "error.game_already_started":  "Гра вже розпочалась",
+  "error.room_full":             "Кімната заповнена (максимум 10 гравців)",
+  "error.invalid_token":         "Сесія недійсна — спробуйте знову",
+  "error.not_host":              "Тільки хост може це зробити",
+  "error.not_hetman":            "Тільки Гетьман може обирати переможця",
+  "error.card_not_in_hand":      "Цієї картки немає у вас в руці",
+  "error.already_submitted":     "Ви вже надіслали картку цього раунду",
+  "error.not_enough_players":    "Недостатньо гравців (потрібно щонайменше 3)",
+  "error.generic":               "Щось пішло не так. Спробуйте ще раз.",
+  "error.name_required":         "Будь ласка, введіть своє ім'я",
+  "error.code_required":         "Будь ласка, введіть код кімнати",
+  "error.code_length":           "Код кімнати має складатися з 6 символів",
+  "error.connection_lost":       "З'єднання втрачено. Перепідключення…",
+
+  // ── Connection ───────────────────────────────────────────
+  "conn.connecting":    "Підключення…",
+  "conn.reconnecting":  "Перепідключення…",
+  "conn.disconnected":  "Немає з'єднання",
+  "conn.connected":     "З'єднано",
+
+  // ── Misc ─────────────────────────────────────────────────
+  "misc.loading":     "Завантаження…",
+  "misc.back":        "Назад",
+  "misc.close":       "Закрити",
+  "misc.confirm":     "Підтвердити",
+  "misc.cancel":      "Скасувати",
+  "misc.yes":         "Так",
+  "misc.no":          "Ні",
+  "misc.optional":    "необов'язково",
+  "misc.points_n":    "{{n}} очок",
+  "misc.round_n":     "Раунд {{n}}",
+  "misc.ai_suffix":   "(ШІ)",
+} as const;
 
 export type UkTranslations = typeof uk;
+export type TranslationKey = keyof UkTranslations;
+
