@@ -101,6 +101,16 @@ export interface Room {
   submissionDeadline: number | null;
   /** Active timer ids keyed by purpose, e.g. "submission" | "inactivity" | "session" | "reconnect:{playerId}" */
   timers: Record<string, ReturnType<typeof setTimeout>>;
+  /**
+   * Called by engine.ts at the end of dealRound (every round, including auto-advance).
+   * Handler.ts sets this once to schedule bot submission turns.
+   */
+  onDealComplete?: (room: Room) => void;
+  /**
+   * Called by engine.ts whenever the phase transitions to "judging".
+   * Handler.ts sets this once to schedule the bot hetman turn.
+   */
+  onJudgingStart?: (room: Room) => void;
 }
 
 /** Sanitised room data broadcast to all clients. */

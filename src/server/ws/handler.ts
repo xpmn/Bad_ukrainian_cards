@@ -46,6 +46,19 @@ export interface WsData {
 
 // ── WS lifecycle ───────────────────────────────────────────────────────────────
 
+/**
+ * Install room-level callbacks that drive bot behaviour from inside engine.ts.
+ * Idempotent — safe to call on every connection open.
+ */
+function ensureRoomHooks(room: ReturnType<typeof rooms.get> & object): void {
+  if (room.onDealComplete) return; // already set
+  room.onDealComplete = (r) => scheduleBotActionsAfterDeal(r);
+  room.onJudgingStart = (r) => {
+    const hetman = r.players.find(p => p.id === r.hetmanId);
+    if (hetman?.isBot) scheduleBotHetmanTurn(r, hetman.id);
+  };
+}
+
 export function handleOpen(ws: ServerWebSocket<WsData>): void {
   const { roomId, token } = ws.data;
   const found = getPlayerByToken(token);
@@ -58,7 +71,8 @@ export function handleOpen(ws: ServerWebSocket<WsData>): void {
 
   const { room, player } = found;
 
-  // Attach the now-validated playerId to the WS data and mark connected
+  // Ensure bot-scheduling hooks are installed (idempotent).
+  ensureRoomHooks(room);
   const wasDisconnected = !player.isConnected;
   player.isConnected = true;
   ws.data.playerId = player.id;
@@ -180,8 +194,7 @@ function dispatch(
     case CLIENT_EVENTS.START_GAME: {
       assertHost(room, playerId);
       startGame(room);
-      dealRound(room);
-      scheduleBotActionsAfterDeal(room);
+      dealRound(room); // onDealComplete callback schedules bot submissions automatically
       broadcastRoomState(room);
       break;
     }
@@ -228,11 +241,7 @@ function dispatch(
     case CLIENT_EVENTS.SUBMIT_CARD: {
       const { card } = assertPayload<{ card: string }>(payload, ["card"]);
       submitCard(room, playerId, card);
-      // If transition to judging and hetman is a bot, schedule judging
-      if (room.phase === "judging") {
-        const hetman = room.players.find(p => p.id === room.hetmanId);
-        if (hetman?.isBot) scheduleBotHetmanTurn(room, hetman.id);
-      }
+      // onJudgingStart callback handles bot hetman scheduling automatically.
       // Confirm privately to submitter
       sendToPlayer(playerId, SERVER_EVENTS.CARDS_DEALT, { hand: room.players.find(p => p.id === playerId)?.hand ?? [] });
       break;

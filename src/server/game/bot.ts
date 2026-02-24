@@ -46,17 +46,8 @@ export function scheduleBotTurn(room: Room, botId: string): void {
 
     try {
       submitCard(room, botId, card);
-
-      // If this submission triggered the judging phase and the hetman is also
-      // a bot, schedule the hetman turn here (the WS handler SUBMIT_CARD path
-      // only runs for human players, so we must do it ourselves).
-      const phaseAfterSubmit = room.phase as string;
-      if (phaseAfterSubmit === "judging") {
-        const hetman = room.players.find(p => p.id === room.hetmanId);
-        if (hetman?.isBot) {
-          scheduleBotHetmanTurn(room, hetman.id);
-        }
-      }
+      // engine.ts calls room.onJudgingStart when all submissions are in,
+      // which schedules the bot hetman turn — no need to do it here.
     } catch {
       // Silently ignore — e.g. phase already changed
     }
@@ -66,8 +57,12 @@ export function scheduleBotTurn(room: Room, botId: string): void {
 /**
  * Schedule the bot Hetman to pick a random winner.
  * Must be called after the judging phase begins.
+ * Safe to call multiple times — only schedules once per round.
  */
 export function scheduleBotHetmanTurn(room: Room, botId: string): void {
+  // Already scheduled this round — don't reset the delay.
+  if (room.timers[`bot_judge:${botId}`] !== undefined) return;
+
   const delay = randomDelay(BOT_JUDGE_MIN_MS, BOT_JUDGE_MAX_MS);
 
   room.timers[`bot_judge:${botId}`] = setTimeout(() => {
@@ -88,8 +83,8 @@ export function scheduleBotHetmanTurn(room: Room, botId: string): void {
 }
 
 /**
- * Schedule all bot actions for the current round (after dealRound).
- * Call this from handler.ts after `dealRound(room)`.
+ * Schedule all bot submissions for the current round (called via room.onDealComplete).
+ * The bot hetman's judging turn is scheduled separately via room.onJudgingStart.
  */
 export function scheduleBotActionsAfterDeal(room: Room): void {
   for (const player of room.players) {
@@ -97,8 +92,4 @@ export function scheduleBotActionsAfterDeal(room: Room): void {
     if (player.id === room.hetmanId) continue; // hetman doesn't submit
     scheduleBotTurn(room, player.id);
   }
-
-  // If the hetman is a bot, schedule them to judge once judging phase starts.
-  // We use a polling approach: wait until all_submitted fires, then schedule.
-  // The handler.ts already calls scheduleBotHetmanTurn when phase → judging.
 }

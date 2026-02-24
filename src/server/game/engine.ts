@@ -142,6 +142,9 @@ export function dealRound(room: Room): void {
   }
 
   broadcastRoomState(room);
+
+  // Notify listeners that a new round was dealt (bot submission scheduling etc.)
+  room.onDealComplete?.(room);
 }
 
 /** Submit a white card on behalf of a player. */
@@ -190,6 +193,9 @@ export function submitCard(room: Room, playerId: string, card: string): void {
 
     broadcast(room.id, SERVER_EVENTS.ALL_SUBMITTED, { submissions: shuffled });
     broadcastRoomState(room);
+
+    // Notify listeners that judging has started (bot hetman scheduling etc.)
+    room.onJudgingStart?.(room);
   } else {
     broadcastRoomState(room);
   }
@@ -239,7 +245,7 @@ export function selectWinner(room: Room, hetmanId: string, submissionAnonymousId
 
 /**
  * Rotate hetman (if enabled) and start the next round or end the game.
- * Caller should schedule bot actions for the new round.
+ * Bot scheduling is handled automatically via room.onDealComplete / room.onJudgingStart.
  */
 export function advanceRound(room: Room): void {
   if (room.currentRound >= room.settings.maxRounds) {
