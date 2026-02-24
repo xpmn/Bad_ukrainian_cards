@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { t } from "@lib/i18n";
 import { useLang } from "../hooks/useLang";
 import { useGame, loadSession } from "../services/gameStore";
@@ -18,7 +18,7 @@ interface GamePageProps {
 export default function GamePage({ roomId }: GamePageProps) {
   useLang();
   const { state, connect, disconnect, selectCard, submitSelectedCard, selectWinner, addToast, sendEvent } = useGame();
-  const { room, myPlayer, myHand, connectionState, selectedCard } = state;
+  const { room, myPlayer, myHand, connectionState, selectedCard, lastRoundWinnerId } = state;
 
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
 
@@ -145,6 +145,12 @@ export default function GamePage({ roomId }: GamePageProps) {
 
           <div style={{ flex: 1, textAlign: "center" }}>
             <PhaseLabel phase={phase} isHetman={isHetman} />
+            {room?.submissionDeadline && phase === "submitting" && (
+              <HeaderCountdown
+                deadline={room.submissionDeadline}
+                totalSec={room.settings.submissionTimeLimitSec ?? 60}
+              />
+            )}
           </div>
 
           <button className="btn btn-ghost btn-sm text-muted" onClick={handleLeave}>
@@ -180,6 +186,12 @@ export default function GamePage({ roomId }: GamePageProps) {
               <p className="text-muted text-sm" style={{ marginTop: 4 }}>
                 {t("game.submitted_count", undefined, { count: String(submittedCount), total: String(totalSubmitters) })}
               </p>
+              {room?.submissionDeadline && (
+                <CountdownTimer
+                  deadline={room.submissionDeadline}
+                  totalSec={room.settings.submissionTimeLimitSec ?? 60}
+                />
+              )}
             </div>
           )}
 
@@ -241,6 +253,7 @@ export default function GamePage({ roomId }: GamePageProps) {
             hetmanId={room?.hetmanId ?? null}
             phase={phase}
             isHost={isHost}
+            lastRoundWinnerId={lastRoundWinnerId}
           />
         </aside>
 
@@ -299,3 +312,110 @@ function PhaseLabel({ phase, isHetman }: { phase: string; isHetman: boolean }) {
   return <span className="text-muted text-sm">{t(key)}</span>;
 }
 
+// ── Countdown timer ────────────────────────────────────────────────────────────
+
+function useSecondsLeft(deadline: number): number {
+  const getLeft = useCallback(
+    () => Math.max(0, Math.round((deadline - Date.now()) / 1_000)),
+    [deadline],
+  );
+  const [secondsLeft, setSecondsLeft] = useState(getLeft);
+
+  useEffect(() => {
+    setSecondsLeft(getLeft());
+    const id = setInterval(() => {
+      const left = getLeft();
+      setSecondsLeft(left);
+      if (left === 0) clearInterval(id);
+    }, 500);
+    return () => clearInterval(id);
+  }, [deadline, getLeft]);
+
+  return secondsLeft;
+}
+
+function CountdownTimer({ deadline, totalSec }: { deadline: number; totalSec: number }) {
+  useLang();
+  const secondsLeft = useSecondsLeft(deadline);
+  const fraction    = totalSec > 0 ? secondsLeft / totalSec : 0;
+  const isLow       = fraction <= 0.3;
+  const color       = isLow ? "var(--c-error, #e05252)" : fraction <= 0.6 ? "var(--c-warning, #f0a500)" : "var(--c-accent)";
+
+  return (
+    <div style={{ marginTop: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+      <span
+        style={{
+          fontSize: "0.85rem",
+          fontWeight: 700,
+          color,
+          transition: "color 0.3s",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {t("game.time_left", undefined, { n: String(secondsLeft) })}
+      </span>
+      <div
+        style={{
+          width: 160,
+          height: 4,
+          borderRadius: 2,
+          background: "var(--c-bg-surface)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.round(fraction * 100)}%`,
+            height: "100%",
+            background: color,
+            transition: "width 0.5s linear, background 0.3s",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Compact timer pill shown in the game header during submission phase. */
+function HeaderCountdown({ deadline, totalSec }: { deadline: number; totalSec: number }) {
+  useLang();
+  const secondsLeft = useSecondsLeft(deadline);
+  const fraction    = totalSec > 0 ? secondsLeft / totalSec : 0;
+  const isLow       = fraction <= 0.3;
+  const color       = isLow ? "var(--c-error, #e05252)" : fraction <= 0.6 ? "var(--c-warning, #f0a500)" : "var(--c-accent)";
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div
+        style={{
+          width: 48,
+          height: 3,
+          borderRadius: 2,
+          background: "var(--c-bg-surface)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.round(fraction * 100)}%`,
+            height: "100%",
+            background: color,
+            transition: "width 0.5s linear, background 0.3s",
+          }}
+        />
+      </div>
+      <span
+        style={{
+          fontSize: "0.8rem",
+          fontWeight: 700,
+          color,
+          transition: "color 0.3s",
+          fontVariantNumeric: "tabular-nums",
+          minWidth: "3ch",
+        }}
+      >
+        {secondsLeft}s
+      </span>
+    </div>
+  );
+}

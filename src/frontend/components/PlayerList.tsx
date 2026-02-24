@@ -10,6 +10,7 @@ interface PlayerListProps {
   hetmanId: string | null;
   phase: GamePhase;
   isHost: boolean;
+  lastRoundWinnerId?: string | null;
   onReplace?: (playerId: string) => void;
 }
 
@@ -20,6 +21,7 @@ export function PlayerList({
   hetmanId,
   phase,
   isHost,
+  lastRoundWinnerId,
   onReplace,
 }: PlayerListProps) {
   useLang();
@@ -39,8 +41,25 @@ export function PlayerList({
 
   return (
     <div className="player-list">
-      {players.map(p => (
-        <div key={p.id} className="player-row">
+      {players.map(p => {
+        const isRoundWinner   = !!lastRoundWinnerId && p.id === lastRoundWinnerId && (phase === "reveal" || phase === "roundEnd");
+        const didSubmit       = phase === "submitting" && p.hasSubmitted && p.id !== hetmanId;
+
+        let rowBg = "transparent";
+        if (isRoundWinner) rowBg = "rgba(230, 57, 70, 0.15)";
+        else if (didSubmit) rowBg = "rgba(45, 198, 83, 0.08)";
+
+        return (
+        <div
+          key={p.id}
+          className="player-row"
+          style={{
+            background: rowBg,
+            borderRadius: "var(--radius-sm)",
+            transition: "background 0.3s",
+            outline: isRoundWinner ? "1px solid rgba(230,57,70,0.5)" : "none",
+          }}
+        >
           <div
             className="player-avatar"
             style={{
@@ -72,8 +91,11 @@ export function PlayerList({
             {!p.isConnected && !p.isBot && (
               <span className="player-badge badge-offline">{t("player.offline")}</span>
             )}
-            {phase === "submitting" && p.hasSubmitted && !p.isBot && (
+            {didSubmit && (
               <span className="player-badge badge-submitted">{t("player.submitted")}</span>
+            )}
+            {isRoundWinner && (
+              <span className="player-badge" style={{ background: "var(--c-accent)", color: "#fff" }}>🏆</span>
             )}
           </div>
 
@@ -91,12 +113,13 @@ export function PlayerList({
 
           {/* Points badge (non-lobby) */}
           {phase !== "lobby" && (
-            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#e63946", marginLeft: 4, flexShrink: 0 }}>
+            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: isRoundWinner ? "var(--c-accent)" : "#e63946", marginLeft: 4, flexShrink: 0 }}>
               {p.points}pts
             </span>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

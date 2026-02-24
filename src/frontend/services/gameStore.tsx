@@ -64,12 +64,14 @@ function toastId(): string {
 // ── State & actions ────────────────────────────────────────────────────────────
 
 export interface GameState {
-  room:             PublicRoom | null;
-  myPlayer:         Omit<Player, "token"> | null;
-  myHand:           string[];
-  connectionState:  ConnectionState;
-  toasts:           Toast[];
-  selectedCard:     string | null;
+  room:               PublicRoom | null;
+  myPlayer:           Omit<Player, "token"> | null;
+  myHand:             string[];
+  connectionState:    ConnectionState;
+  toasts:             Toast[];
+  selectedCard:       string | null;
+  /** playerId of whoever won the most recent round — cleared at start of next round. */
+  lastRoundWinnerId:  string | null;
 }
 
 type Action =
@@ -93,12 +95,13 @@ type Action =
   | { type: "RESET" };
 
 const initialState: GameState = {
-  room:            null,
-  myPlayer:        null,
-  myHand:          [],
-  connectionState: "disconnected",
-  toasts:          [],
-  selectedCard:    null,
+  room:               null,
+  myPlayer:           null,
+  myHand:             [],
+  connectionState:    "disconnected",
+  toasts:             [],
+  selectedCard:       null,
+  lastRoundWinnerId:  null,
 };
 
 function reducer(state: GameState, action: Action): GameState {
@@ -122,7 +125,8 @@ function reducer(state: GameState, action: Action): GameState {
       if (!state.room) return state;
       return {
         ...state,
-        selectedCard: null,
+        selectedCard:      null,
+        lastRoundWinnerId: null,
         room: {
           ...state.room,
           currentBlackCard: action.blackCard,
@@ -147,6 +151,7 @@ function reducer(state: GameState, action: Action): GameState {
       if (!state.room) return state;
       return {
         ...state,
+        lastRoundWinnerId: action.submission.playerId,
         room: {
           ...state.room,
           phase: "reveal",
@@ -269,6 +274,24 @@ function reducer(state: GameState, action: Action): GameState {
   }
 }
 
+// ── Error code → i18n key ──────────────────────────────────────────────────────
+
+function mapWsErrorCode(code: string): string {
+  const map: Record<string, string> = {
+    ROOM_NOT_FOUND:        "error.room_not_found",
+    WRONG_PASSWORD:        "error.wrong_password",
+    GAME_ALREADY_STARTED:  "error.game_already_started",
+    ROOM_FULL:             "error.room_full",
+    INVALID_TOKEN:         "error.invalid_token",
+    NOT_HOST:              "error.not_host",
+    NOT_HETMAN:            "error.not_hetman",
+    CARD_NOT_IN_HAND:      "error.card_not_in_hand",
+    ALREADY_SUBMITTED:     "error.already_submitted",
+    NOT_ENOUGH_PLAYERS:    "error.not_enough_players",
+  };
+  return map[code] ?? "error.generic";
+}
+
 // ── Context ────────────────────────────────────────────────────────────────────
 
 interface GameContextValue {
@@ -385,6 +408,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const p = raw as { settings: GameSettings };
         dispatch({ type: "SETTINGS_UPDATED", settings: p.settings });
         dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.settings_updated"), type: "info" } });
+      }),
+      wsService.on(EVENTS.ERROR, raw => {
+        const p = raw as { code: string; message: string };
+        const msgKey = mapWsErrorCode(p.code);
+        dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t(msgKey as Parameters<typeof t>[0]), type: "error" } });
       }),
     ];
 

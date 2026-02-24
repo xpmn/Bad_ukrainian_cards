@@ -77,6 +77,7 @@ export function createRoom(
     whiteDeck: [...whiteCards],
     createdAt: Date.now(),
     lastActivityAt: Date.now(),
+    submissionDeadline: null,
     timers: {},
   };
 
@@ -194,5 +195,6 @@ export function getPublicRoom(room: Room): PublicRoom {
     currentBlackCard: room.currentBlackCard,
     submissions: room.submissions.map(s => ({ id: s.anonymousId, card: s.card })),
     revealedSubmissions: showFull ? room.submissions : [],
+    submissionDeadline: room.submissionDeadline,
   };
 }

@@ -97,6 +97,8 @@ export interface Room {
   whiteDeck: string[];   // remaining cards
   createdAt: number;     // Unix ms
   lastActivityAt: number;
+  /** Unix ms timestamp when the submission phase ends (null if no time limit). */
+  submissionDeadline: number | null;
   /** Active timer ids keyed by purpose, e.g. "submission" | "inactivity" | "session" | "reconnect:{playerId}" */
   timers: Record<string, ReturnType<typeof setTimeout>>;
 }
@@ -115,6 +117,8 @@ export interface PublicRoom {
   submissions: AnonymousSubmission[];
   /** Full submissions (with playerId) visible after Hetman picks winner. */
   revealedSubmissions: Submission[];
+  /** Unix ms timestamp when the submission phase ends (null if no time limit). */
+  submissionDeadline: number | null;
 }
 
 // --------------- WebSocket payloads ----------

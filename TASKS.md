@@ -499,9 +499,9 @@ Reusable in both HomePage (create room) and LobbyPage (edit settings):
 ### 4.1 Error Handling
 **Priority:** P1
 
-- [ ] Server sends structured errors: `{ code: 'ROOM_NOT_FOUND' | 'WRONG_PASSWORD' | 'GAME_ALREADY_STARTED' | ..., message: string }`
-- [ ] Client shows errors as `Toast` notifications
-- [ ] REST API errors shown inline on forms
+- [x] Server sends structured errors: `{ code: 'ROOM_NOT_FOUND' | 'WRONG_PASSWORD' | 'GAME_ALREADY_STARTED' | ..., message: string }`
+- [x] Client shows errors as `Toast` notifications
+- [x] REST API errors shown inline on forms
 
 ### 4.2 Responsive Design
 **Priority:** P1

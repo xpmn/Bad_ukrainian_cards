@@ -46,6 +46,17 @@ export function scheduleBotTurn(room: Room, botId: string): void {
 
     try {
       submitCard(room, botId, card);
+
+      // If this submission triggered the judging phase and the hetman is also
+      // a bot, schedule the hetman turn here (the WS handler SUBMIT_CARD path
+      // only runs for human players, so we must do it ourselves).
+      const phaseAfterSubmit = room.phase as string;
+      if (phaseAfterSubmit === "judging") {
+        const hetman = room.players.find(p => p.id === room.hetmanId);
+        if (hetman?.isBot) {
+          scheduleBotHetmanTurn(room, hetman.id);
+        }
+      }
     } catch {
       // Silently ignore — e.g. phase already changed
     }

@@ -112,7 +112,12 @@ export function dealRound(room: Room): void {
   room.currentBlackCard = room.blackDeck.shift() ?? null;
 
   // Start submission timer if configured
+  room.submissionDeadline = room.settings.submissionTimeLimitSec
+    ? Date.now() + room.settings.submissionTimeLimitSec * 1_000
+    : null;
+
   startSubmissionTimer(room, () => {
+    room.submissionDeadline = null;
     // Force-submit a random card for every player who hasn't submitted
     for (const playerId of getSubmitters(room)) {
       const player = room.players.find(p => p.id === playerId);
@@ -176,6 +181,7 @@ export function submitCard(room: Room, playerId: string, card: string): void {
   if (allSubmitted) {
     cancelSubmissionTimer(room);
     room.phase = "judging";
+    room.submissionDeadline = null;
 
     // Shuffle anonymous submissions so submission order doesn't reveal anything
     const shuffled = shuffleDeck(
