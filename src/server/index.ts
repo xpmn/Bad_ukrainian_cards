@@ -3,7 +3,6 @@ import index from "../index.html";
 import { setServer } from "./ws/broadcast";
 import { handleOpen, handleClose, handleMessage, type WsData } from "./ws/handler";
 import { handleCreateRoom, handleJoinRoom, handleGetRoom } from "./router";
-import { getPlayerByToken } from "./game/room";
 
 const PORT = Number(process.env["PORT"] ?? 3000);
 
@@ -28,14 +27,12 @@ const server = serve<WsData>({
         return new Response("Missing roomId or token", { status: 400 });
       }
 
-      // Validate token before upgrading so we can return 401 over HTTP
-      const found = getPlayerByToken(token);
-      if (!found || found.room.id !== roomId.toUpperCase()) {
-        return new Response("Invalid token or room", { status: 401 });
-      }
-
+      // Accept the upgrade for any request with roomId+token present.
+      // handleOpen will validate the token and close with code 4001 if invalid.
+      // This lets the client receive a meaningful close code instead of a raw
+      // HTTP 401 (which WebSocket API exposes only as opaque error code 1006).
       const upgraded = srv.upgrade(req, {
-        data: { roomId: roomId.toUpperCase(), playerId: found.player.id, token },
+        data: { roomId: roomId.toUpperCase(), playerId: "", token },
       });
       return upgraded ? undefined : new Response("Upgrade failed", { status: 500 });
     }

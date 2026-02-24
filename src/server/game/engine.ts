@@ -49,7 +49,7 @@ function refillDeck<T>(deck: T[], source: T[]): T[] {
 }
 
 function broadcastRoomState(room: Room): void {
-  broadcast(room.id, SERVER_EVENTS.ROOM_STATE, getPublicRoom(room));
+  broadcast(room.id, SERVER_EVENTS.ROOM_STATE, { room: getPublicRoom(room) });
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────────

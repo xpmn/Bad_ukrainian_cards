@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { t, setLang, getLang } from "@lib/i18n";
 import { useLang } from "../hooks/useLang";
-import { useGame } from "../services/gameStore";
 import { saveSession } from "../services/gameStore";
 import type { GameSettings } from "@lib/types";
 import GameSettingsPanel from "../components/GameSettings";
@@ -20,8 +19,6 @@ const DEFAULT_SETTINGS: GameSettings = {
 
 export default function HomePage() {
   useLang(); // re-render on language change
-
-  const { connect } = useGame();
 
   // Create form state
   const [createName, setCreateName]     = useState("");
@@ -63,7 +60,7 @@ export default function HomePage() {
       }
 
       saveSession(data.roomId, data.token, data.playerId);
-      connect(data.roomId, data.token);
+      // LobbyPage will call connect() on mount — don't double-connect here.
       window.location.hash = `#/lobby/${data.roomId}`;
     } catch {
       setCreateError(t("error.generic"));
@@ -112,7 +109,7 @@ export default function HomePage() {
 
       const roomId = data.roomId ?? code;
       saveSession(roomId, data.token, data.playerId);
-      connect(roomId, data.token);
+      // LobbyPage will call connect() on mount — don't double-connect here.
       window.location.hash = `#/lobby/${roomId}`;
     } catch {
       setJoinError(t("error.generic"));

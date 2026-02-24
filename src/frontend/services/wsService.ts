@@ -16,8 +16,11 @@ let reconnectAttempt = 0;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let manualClose = false;
 
+const MAX_RECONNECT_ATTEMPTS = 5;
+
 const listeners: Map<string, Set<AnyHandler>> = new Map();
 const connStateListeners: Set<(s: ConnectionState) => void> = new Set();
+const authErrorListeners: Set<() => void> = new Set();
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -49,6 +52,18 @@ function scheduleReconnect(): void {
 }
 
 function doConnect(roomId: string, token: string, isReconnect: boolean): void {
+  // Idempotency: if we're already connecting/connected with the same credentials
+  // (e.g. React StrictMode double-invokes effects), skip creating a duplicate socket.
+  if (
+    !isReconnect &&
+    socket !== null &&
+    currentRoomId === roomId &&
+    currentToken === token &&
+    (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)
+  ) {
+    return;
+  }
+
   if (socket) {
     socket.onopen = null;
     socket.onmessage = null;
@@ -81,10 +96,21 @@ function doConnect(roomId: string, token: string, isReconnect: boolean): void {
     }
   };
 
-  ws.onclose = () => {
+  ws.onclose = (evt: CloseEvent) => {
     socket = null;
+    // 4xxx = application-level close (e.g. auth failure) — do not retry
+    if (evt.code >= 4000 && evt.code < 5000) {
+      manualClose = true;
+      setConnectionState("disconnected");
+      authErrorListeners.forEach(fn => fn());
+      return;
+    }
     if (manualClose) {
       setConnectionState("disconnected");
+    } else if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) {
+      // Exhausted retries — give up so the UI can show an error
+      setConnectionState("disconnected");
+      authErrorListeners.forEach(fn => fn());
     } else {
       setConnectionState("reconnecting");
       scheduleReconnect();
@@ -148,6 +174,12 @@ function onConnectionStateChange(fn: (s: ConnectionState) => void): () => void {
   return () => connStateListeners.delete(fn);
 }
 
+/** Subscribe to auth/session errors (server closed with 4001, or reconnects exhausted). */
+function onAuthError(fn: () => void): () => void {
+  authErrorListeners.add(fn);
+  return () => authErrorListeners.delete(fn);
+}
+
 export const wsService = {
   connect,
   disconnect,
@@ -156,5 +188,6 @@ export const wsService = {
   off,
   getConnectionState,
   onConnectionStateChange,
+  onAuthError,
 };
 

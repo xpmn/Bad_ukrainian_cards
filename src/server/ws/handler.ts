@@ -51,14 +51,14 @@ export function handleOpen(ws: ServerWebSocket<WsData>): void {
   const found = getPlayerByToken(token);
 
   if (!found || found.room.id !== roomId) {
-    sendError(ws, "INVALID_TOKEN", "Invalid token or room");
-    ws.close();
+    // Close with 4001 so the client distinguishes auth failure from network error
+    ws.close(4001, "Invalid token or room");
     return;
   }
 
   const { room, player } = found;
 
-  // Mark reconnection
+  // Attach the now-validated playerId to the WS data and mark connected
   const wasDisconnected = !player.isConnected;
   player.isConnected = true;
   ws.data.playerId = player.id;
@@ -182,9 +182,7 @@ function dispatch(
       startGame(room);
       dealRound(room);
       scheduleBotActionsAfterDeal(room);
-      broadcast(room.id, SERVER_EVENTS.ROOM_STATE, {
-        room: getPublicRoom(room),
-      });
+      broadcastRoomState(room);
       break;
     }
 

@@ -313,16 +313,15 @@ lobby → dealing → submitting → judging → reveal → roundEnd → (next r
 ### 3.1 App Shell & Hash Router (`src/frontend/App.tsx`)
 **Priority:** P0
 
-- [] Implement hash-based router purely in React (no `react-router`):
+- [x] Implement hash-based router purely in React (no `react-router`):
   ```
   /#/            → HomePage
   /#/lobby/:id   → LobbyPage
   /#/game/:id    → GamePage
   /#/*           → NotFoundPage
   ```
-- [ ] `useHashRouter()` hook: parses `window.location.hash`, listens for `hashchange`
-- [ ] `navigate(path)` helper updates `window.location.hash`
-- [ ] App-level language switcher (uk/en toggle) stored in `localStorage`
+- [x] `parseHash()` helper: parses `window.location.hash`, listens for `hashchange`
+- [x] App-level language switcher (uk/en toggle) stored in `localStorage`
 
 ---
 
@@ -331,14 +330,14 @@ lobby → dealing → submitting → judging → reveal → roundEnd → (next r
 
 Single singleton managing the WS connection for the entire app:
 
-- [ ] `connect(roomId, token)` → opens `ws://host/ws?roomId=&token=`
-- [ ] `disconnect()` → closes connection
-- [ ] `send(event, payload)` → sends JSON message
-- [ ] `on(event, handler)` / `off(event, handler)` → typed event emitter
-- [ ] Auto-reconnect with exponential backoff (max 5 retries, 1s → 32s)
-- [ ] Expose `connectionState: 'connecting' | 'connected' | 'disconnected' | 'reconnecting'`
-- [ ] All event payloads are fully typed using the types from `src/lib/types.ts`
-- [ ] No direct WebSocket calls anywhere else in the frontend codebase
+- [x] `connect(roomId, token)` → opens `ws://host/ws?roomId=&token=`
+- [x] `disconnect()` → closes connection
+- [x] `send(event, payload)` → sends JSON message
+- [x] `on(event, handler)` / `off(event, handler)` → typed event emitter
+- [x] Auto-reconnect with exponential backoff (max 5 retries, 1s → 32s)
+- [x] Expose `connectionState: 'connecting' | 'connected' | 'disconnected' | 'reconnecting'`
+- [x] All event payloads are fully typed using the types from `src/lib/types.ts`
+- [x] No direct WebSocket calls anywhere else in the frontend codebase
 
 ---
 
@@ -347,8 +346,8 @@ Single singleton managing the WS connection for the entire app:
 
 React context-based state store (no external state library):
 
-- [ ] `GameProvider` wraps the app — subscribes to WS events and updates state
-- [ ] State shape:
+- [x] `GameProvider` wraps the app — subscribes to WS events and updates state
+- [x] State shape:
   ```typescript
   interface GameState {
     room: RoomStatePayload | null;
@@ -363,25 +362,25 @@ React context-based state store (no external state library):
     error: string | null;
   }
   ```
-- [ ] `useGame()` hook returns `{ state, actions }` where `actions` wraps all `wsService.send()` calls
-- [ ] Store persists `token` and `roomId` to `localStorage` for reconnect on page reload
+- [x] `useGame()` hook returns `{ state, actions }` where `actions` wraps all `wsService.send()` calls
+- [x] Store persists `token` and `roomId` to `localStorage` for reconnect on page reload
 
 ---
 
 ### 3.4 Home Page (`src/frontend/pages/HomePage.tsx`)
 **Priority:** P0
 
-- [ ] **Create Room** form:
+- [x] **Create Room** form:
   - Player name input
   - Game settings panel (`GameSettings` component)
   - Submit → `POST /api/rooms` → redirect to `/#/lobby/:id`
-- [ ] **Join Room** form:
+- [x] **Join Room** form:
   - Room code input (6 chars, auto-uppercase)
   - Player name input
   - Password input (shown only if room has password — check via `GET /api/rooms/:id`)
   - Submit → `POST /api/rooms/:id/join` → redirect to `/#/lobby/:id`
-- [ ] Language switcher in header
-- [ ] All labels via `t()` i18n function
+- [x] Language switcher in header
+- [x] All labels via `t()` i18n function
 
 ---
 
@@ -390,15 +389,15 @@ React context-based state store (no external state library):
 
 Connects to WebSocket on mount.
 
-- [ ] Show room code with "Copy link" button
-- [ ] **Player list** (`PlayerList` component): show all players, bots marked with `(AI)` tag, host badge, connection status indicator
-- [ ] Host controls:
+- [x] Show room code with "Copy link" button
+- [x] **Player list** (`PlayerList` component): show all players, bots marked with `(AI)` tag, host badge, connection status indicator
+- [x] Host controls:
   - "Add bot" button (up to 9 total players)
   - Kick/replace-with-bot button per player
   - Edit settings (`GameSettings` component, inline)
   - "Start game" button (enabled when ≥3 players)
-- [ ] Non-host view: waiting message, player list (read-only)
-- [ ] "Start game" triggers `start_game` WS event → server transitions to game, all clients redirect to `/#/game/:id`
+- [x] Non-host view: waiting message, player list (read-only)
+- [x] "Start game" triggers `start_game` WS event → server transitions to game, all clients redirect to `/#/game/:id`
 
 ---
 
@@ -410,49 +409,49 @@ Main game screen. Composed of multiple focused sub-components.
 #### Sub-components
 
 **`BlackCard` (`src/frontend/components/Card/BlackCard.tsx`)**
-- [ ] Displays current black card text
-- [ ] Renders `_` blanks as styled underlines
-- [ ] Animated entrance (deal from top-center)
+- [x] Displays current black card text
+- [x] Renders `_` blanks as styled underlines
+- [x] Animated entrance (deal from top-center)
 
 **`WhiteCard` (`src/frontend/components/Card/WhiteCard.tsx`)**
-- [ ] Renders individual white card
-- [ ] States: `idle`, `selected`, `submitted`, `winner`
-- [ ] Click to select/deselect (during `submitting` phase)
-- [ ] Confirm button appears when card is selected
-- [ ] CSS transition animations for hover, select, submit
+- [x] Renders individual white card
+- [x] States: `idle`, `selected`, `submitted`, `winner`
+- [x] Click to select/deselect (during `submitting` phase)
+- [x] Confirm button appears when card is selected
+- [x] CSS transition animations for hover, select, submit
 
 **`CardBack` (`src/frontend/components/Card/CardBack.tsx`)**
-- [ ] Back-face of cards (used in dealing animation and submission pile)
+- [x] Back-face of cards (used in dealing animation and submission pile)
 
 **`PlayerHand`** (inline in GamePage or separate component)
-- [ ] Displays `myHand` as a row of `WhiteCard` components
-- [ ] Fan layout on desktop, scroll on mobile
-- [ ] Hidden for the Hetman during `submitting` phase
+- [x] Displays `myHand` as a row of `WhiteCard` components
+- [x] Fan layout on desktop, scroll on mobile
+- [x] Hidden for the Hetman during `submitting` phase
 
 **`SubmissionPile` (`src/frontend/components/SubmissionPile.tsx`)**
-- [ ] During `submitting`: shows stacked `CardBack` count-up as cards are submitted
-- [ ] During `judging` (Hetman view): flip-reveal all submissions as clickable cards (no player names)
-- [ ] During `reveal`: highlight winner, show submitter name
+- [x] During `submitting`: shows stacked `CardBack` count-up as cards are submitted
+- [x] During `judging` (Hetman view): flip-reveal all submissions as clickable cards (no player names)
+- [x] During `reveal`: highlight winner, show submitter name
 
 **`PlayerList` (`src/frontend/components/PlayerList.tsx`)**
-- [ ] Sidebar list of players: name, points, Hetman crown icon, submission checkmark, connection dot
-- [ ] Bots: show `(AI)` badge
+- [x] Sidebar list of players: name, points, Hetman crown icon, submission checkmark, connection dot
+- [x] Bots: show `(AI)` badge
 
 **`ScoreBoard` (`src/frontend/components/ScoreBoard.tsx`)**
-- [ ] Shown in `roundEnd` overlay and `gameOver` screen
-- [ ] Sorted by points descending
-- [ ] Winner highlighted with trophy icon
+- [x] Shown in `roundEnd` overlay and `gameOver` screen
+- [x] Sorted by points descending
+- [x] Winner highlighted with trophy icon
 
 **`Toast` (`src/frontend/components/Toast.tsx`)**
-- [ ] Slide-in notification for events: player joined/left, round start, winner announcement
-- [ ] Auto-dismiss after 4 s
+- [x] Slide-in notification for events: player joined/left, round start, winner announcement
+- [x] Auto-dismiss after 4 s
 
 #### Game page phase rendering
-- [ ] `submitting` — show black card + player hand
-- [ ] `judging` — show black card + submission pile (Hetman can click to pick winner; others see waiting state)
-- [ ] `reveal` — animate winner card rising, show player name
-- [ ] `roundEnd` — score overlay for 5 s then auto-advance (host triggers `next_round` or auto after delay)
-- [ ] `gameOver` — final scoreboard, "Play again" button
+- [x] `submitting` — show black card + player hand
+- [x] `judging` — show black card + submission pile (Hetman can click to pick winner; others see waiting state)
+- [x] `reveal` — animate winner card rising, show player name
+- [x] `roundEnd` — score overlay for 5 s then auto-advance (host triggers `next_round` or auto after delay)
+- [x] `gameOver` — final scoreboard, "Play again" button
 
 ---
 
@@ -461,13 +460,13 @@ Main game screen. Composed of multiple focused sub-components.
 
 All animations via CSS keyframes + `transition`. No animation libraries.
 
-- [ ] **Deal animation**: cards fly from center/off-screen to their slot in hand (staggered, 80 ms per card)
-- [ ] **Submit animation**: card slides up from hand and flips face-down onto submission pile
-- [ ] **Flip animation**: submission cards flip from back-face to front-face during judging reveal
-- [ ] **Winner animation**: winning card scales up and glows; confetti burst (pure CSS or simple canvas fallback)
-- [ ] **Toast slide-in/out**: slide from right
-- [ ] **Hover lift**: white cards lift 8 px on hover with subtle shadow
-- [ ] Respect `prefers-reduced-motion` media query — disable motion if set
+- [x] **Deal animation**: cards fly from center/off-screen to their slot in hand (staggered, 80 ms per card)
+- [x] **Submit animation**: card slides up from hand and flips face-down onto submission pile
+- [x] **Flip animation**: submission cards flip from back-face to front-face during judging reveal
+- [x] **Winner animation**: winning card scales up and glows; confetti burst (pure CSS or simple canvas fallback)
+- [x] **Toast slide-in/out**: slide from right
+- [x] **Hover lift**: white cards lift 8 px on hover with subtle shadow
+- [x] Respect `prefers-reduced-motion` media query — disable motion if set
 
 ---
 
@@ -476,22 +475,22 @@ All animations via CSS keyframes + `transition`. No animation libraries.
 
 Reusable in both HomePage (create room) and LobbyPage (edit settings):
 
-- [ ] **Max rounds** — number input (range 5–50, default 10)
-- [ ] **Submission time limit** — toggle off / 30 s / 60 s / 90 s / 120 s
-- [ ] **Allow custom cards** — checkbox (reserved for future)
-- [ ] **Rotate Hetman** — checkbox (default on)
-- [ ] **Password** — optional text field
-- [ ] In lobby (host only): changes emit `update_settings` WS event immediately on blur/change
+- [x] **Max rounds** — number input (range 5–50, default 10)
+- [x] **Submission time limit** — toggle off / 30 s / 60 s / 90 s / 120 s
+- [x] **Allow custom cards** — checkbox (reserved for future)
+- [x] **Rotate Hetman** — checkbox (default on)
+- [x] **Password** — optional text field
+- [x] In lobby (host only): changes emit `update_settings` WS event immediately on blur/change
 
 ---
 
 ### 3.9 Reconnection & Persistence
 **Priority:** P1
 
-- [ ] On app load: check `localStorage` for `{ token, roomId }`
-- [ ] If present and not on home page: attempt WS connect; if room is still active → restore session
-- [ ] If room no longer exists: clear storage, redirect to `/`
-- [ ] Show "Reconnecting…" overlay while `connectionState === 'reconnecting'`
+- [x] On app load: check `localStorage` for `{ token, roomId }`
+- [x] If present and not on home page: attempt WS connect; if room is still active → restore session
+- [x] If room no longer exists: clear storage, redirect to `/`
+- [x] Show "Reconnecting…" overlay while `connectionState === 'reconnecting'`
 
 ---
 

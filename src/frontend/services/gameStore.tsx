@@ -315,11 +315,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dispatch({ type: "SET_CONNECTION", state: s })
     );
 
+    // auth error: server closed with 4001 (stale session) or reconnects exhausted
+    const unsubAuth = wsService.onAuthError(() => {
+      clearSession();
+      dispatch({ type: "RESET" });
+      window.location.hash = "#/";
+    });
+
     // game events
     const unsubs = [
       wsService.on(EVENTS.ROOM_STATE, raw => {
-        const p = raw as { room: PublicRoom; myPlayer: Omit<Player, "token">; myHand: string[] };
-        dispatch({ type: "SET_STATE", room: p.room, myPlayer: p.myPlayer, myHand: p.myHand });
+        const p = raw as { room?: PublicRoom; myPlayer?: Omit<Player, "token">; myHand?: string[] } & PublicRoom;
+        // Two variants:
+        // 1. Initial/reconnect (sent directly to socket): { room, myPlayer, myHand }
+        // 2. Broadcast room update (add_bot, settings, etc.):  { room }
+        const roomData = p.room ?? (p as unknown as PublicRoom);
+        if (p.myPlayer !== undefined) {
+          dispatch({ type: "SET_STATE", room: roomData, myPlayer: p.myPlayer, myHand: p.myHand ?? [] });
+        } else {
+          dispatch({ type: "UPDATE_ROOM", room: roomData });
+        }
       }),
       wsService.on(EVENTS.ROUND_START, raw => {
         const p = raw as { blackCard: string; hetmanId: string; round: number };
@@ -375,6 +390,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     return () => {
       unsubConn();
+      unsubAuth();
       unsubs.forEach(fn => fn());
     };
   }, []);
