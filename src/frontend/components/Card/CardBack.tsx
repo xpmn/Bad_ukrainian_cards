@@ -8,6 +8,7 @@ export function CardBack({ className = "", animate = false }: CardBackProps) {
     <div
       className={`card card-back ${animate ? "anim-deal" : ""} ${className}`}
       style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      aria-hidden="true"
     >
       <span style={{ fontSize: "2rem", opacity: 0.2 }}>🂠</span>
     </div>

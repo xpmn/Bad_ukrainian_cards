@@ -88,9 +88,19 @@ button {
   outline: none;
 }
 
+button:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
 input, select, textarea {
   font-family: inherit;
   outline: none;
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 1px;
 }
 
 /* ── App shell ──────────────────────────────── */
@@ -275,6 +285,13 @@ input, select, textarea {
 }
 
 .card.selectable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.8);
+}
+
+.card.selectable:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
   transform: translateY(-8px);
   box-shadow: 0 12px 32px rgba(0,0,0,.8);
 }

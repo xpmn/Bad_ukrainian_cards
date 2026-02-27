@@ -85,6 +85,7 @@ export const en: Record<TranslationKey, string> = {
   "game.scores":              "Scores",
   "game.final_scores":        "Final scores",
   "game.leave":               "Leave game",
+  "game.your_hand":            "Your hand",
 
   // ── Player list ──────────────────────────────────────────
   "player.replace_with_bot":  "Replace with bot",

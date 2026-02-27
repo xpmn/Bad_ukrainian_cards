@@ -160,6 +160,7 @@ export function submitCard(room: Room, playerId: string, card: string): void {
     throw new Error("ALREADY_SUBMITTED");
   }
 
+  // Security: server-side validation that the submitted card is actually in the player's hand
   const cardIdx = player.hand.indexOf(card);
   if (cardIdx === -1) throw new Error("CARD_NOT_IN_HAND");
 
@@ -204,6 +205,7 @@ export function submitCard(room: Room, playerId: string, card: string): void {
 /** Hetman picks the winning submission by anonymous id. */
 export function selectWinner(room: Room, hetmanId: string, submissionAnonymousId: string): void {
   if (room.phase !== "judging") throw new Error("NOT_JUDGING_PHASE");
+  // Security: only the current Hetman (Card Czar) can select the winner
   if (hetmanId !== room.hetmanId) throw new Error("NOT_HETMAN");
 
   const submission = room.submissions.find(s => s.anonymousId === submissionAnonymousId);

@@ -276,6 +276,7 @@ function sendError(ws: ServerWebSocket<WsData>, code: string, message: string): 
   ws.send(JSON.stringify({ event: SERVER_EVENTS.ERROR, payload: { code, message } }));
 }
 
+/** Security: only the room host can perform privileged actions (start game, add/remove bots, update settings). */
 function assertHost(room: NonNullable<ReturnType<typeof rooms.get>>, playerId: string): void {
   if (room.hostId !== playerId) throw new RoomError("NOT_HOST", "Only the host can do that");
 }

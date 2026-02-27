@@ -84,6 +84,7 @@ export const uk = {
   "game.scores":              "Рахунок",
   "game.final_scores":        "Фінальний рахунок",
   "game.leave":               "Вийти з гри",
+  "game.your_hand":            "Ваша рука",
 
   // ── Player list ──────────────────────────────────────────
   "player.replace_with_bot":  "Замінити ботом",

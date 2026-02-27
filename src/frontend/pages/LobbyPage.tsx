@@ -116,8 +116,8 @@ export default function LobbyPage({ roomId }: LobbyPageProps) {
             <p className="text-muted text-sm" style={{ marginTop: 4 }}>{t("lobby.waiting")}</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="room-code-badge">{room?.id ?? roomId}</div>
-            <button className="btn btn-secondary btn-sm" onClick={handleCopyLink}>
+            <div className="room-code-badge" role="status" aria-label={`${t("lobby.room_code")}: ${room?.id ?? roomId}`}>{room?.id ?? roomId}</div>
+            <button className="btn btn-secondary btn-sm" onClick={handleCopyLink} aria-label={copied ? t("lobby.copied") : t("lobby.copy_link")}>
               {copied ? t("lobby.copied") : t("lobby.copy_link")}
             </button>
           </div>

@@ -132,16 +132,20 @@ export default function HomePage() {
     <div className="home-page">
       {/* Language switcher */}
       <div style={{ position: "absolute", top: 16, right: 16 }}>
-        <div className="lang-switcher">
+        <div className="lang-switcher" role="group" aria-label={t("app.language")}>
           <button
             className={`btn btn-ghost btn-sm ${getLang() === "uk" ? "text-accent" : ""}`}
             onClick={() => setLang("uk")}
+            aria-label={t("app.lang.uk")}
+            aria-pressed={getLang() === "uk"}
           >
             {t("app.lang.uk")}
           </button>
           <button
             className={`btn btn-ghost btn-sm ${getLang() === "en" ? "text-accent" : ""}`}
             onClick={() => setLang("en")}
+            aria-label={t("app.lang.en")}
+            aria-pressed={getLang() === "en"}
           >
             {t("app.lang.en")}
           </button>

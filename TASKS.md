@@ -513,18 +513,18 @@ Reusable in both HomePage (create room) and LobbyPage (edit settings):
 ### 4.3 Accessibility
 **Priority:** P2
 
-- [ ] Keyboard navigation for card selection (arrow keys + Enter)
-- [ ] ARIA labels on all interactive elements
-- [ ] Focus rings restored where browser defaults are removed
+- [x] Keyboard navigation for card selection (arrow keys + Enter)
+- [x] ARIA labels on all interactive elements
+- [x] Focus rings restored where browser defaults are removed
 
 ### 4.4 Security
 **Priority:** P1
 
-- [ ] Tokens are `crypto.randomUUID()` — never reuse
-- [ ] Player can only submit cards that are actually in their hand (server-side validation)
-- [ ] Only host can perform host actions (validated server-side by `playerId === room.hostId`)
-- [ ] Only Hetman can select winner (server-side check)
-- [ ] Room codes excluded from server logs in production
+- [x] Tokens are `crypto.randomUUID()` — never reuse
+- [x] Player can only submit cards that are actually in their hand (server-side validation)
+- [x] Only host can perform host actions (validated server-side by `playerId === room.hostId`)
+- [x] Only Hetman can select winner (server-side check)
+- [x] Room codes excluded from server logs in production
 
 ---
 

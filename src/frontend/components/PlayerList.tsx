@@ -104,6 +104,7 @@ export function PlayerList({
             <button
               className="btn btn-ghost btn-sm"
               title={t("player.replace_with_bot")}
+              aria-label={`${t("player.replace_with_bot")}: ${p.name}`}
               onClick={() => handleReplace(p.id)}
               style={{ marginLeft: 4, fontSize: "0.75rem", padding: "2px 6px" }}
             >

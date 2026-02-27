@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef, type KeyboardEvent } from "react";
 import { t } from "@lib/i18n";
 import { useLang } from "../hooks/useLang";
 import { useGame, loadSession } from "../services/gameStore";
@@ -57,7 +57,34 @@ export default function GamePage({ roomId }: GamePageProps) {
 
   const showReconnecting = connectionState === "reconnecting" || connectionState === "connecting";
 
+  // ── Refs ──────────────────────────────────────────────────────────────────────
+  const handRef = useRef<HTMLDivElement>(null);
+
   // ── Handlers ─────────────────────────────────────────────────────────────────
+
+  function handleHandKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    const cards = handRef.current?.querySelectorAll<HTMLElement>("[role='button']");
+    if (!cards || cards.length === 0) return;
+
+    const focusedIdx = Array.from(cards).findIndex(c => c === document.activeElement);
+
+    let nextIdx = -1;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      nextIdx = focusedIdx < cards.length - 1 ? focusedIdx + 1 : 0;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      nextIdx = focusedIdx > 0 ? focusedIdx - 1 : cards.length - 1;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      nextIdx = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      nextIdx = cards.length - 1;
+    }
+
+    if (nextIdx >= 0) cards[nextIdx]?.focus();
+  }
 
   function handleSubmit() {
     if (!selectedCard) return;
@@ -135,7 +162,7 @@ export default function GamePage({ roomId }: GamePageProps) {
 
       <div className="game-page">
         {/* ── Header ── */}
-        <header className="game-header">
+        <header className="game-header" role="banner">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontWeight: 800, fontSize: "1rem" }}>{t("app.title")}</span>
             <span className="text-muted text-sm">
@@ -153,13 +180,13 @@ export default function GamePage({ roomId }: GamePageProps) {
             )}
           </div>
 
-          <button className="btn btn-ghost btn-sm text-muted" onClick={handleLeave}>
+          <button className="btn btn-ghost btn-sm text-muted" onClick={handleLeave} aria-label={t("game.leave")}>
             {t("game.leave")}
           </button>
         </header>
 
         {/* ── Main area ── */}
-        <main className="game-main">
+        <main className="game-main" role="main">
           {/* Dealing / loading */}
           {(phase === "dealing" || phase === "lobby" || !room) && (
             <div className="center-page" style={{ minHeight: "unset" }}>
@@ -242,7 +269,7 @@ export default function GamePage({ roomId }: GamePageProps) {
         </main>
 
         {/* ── Sidebar: player list ── */}
-        <aside className="game-sidebar">
+        <aside className="game-sidebar" role="complementary" aria-label={t("lobby.players")}>
           <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--c-text-muted)", marginBottom: 8 }}>
             {t("lobby.players")}
           </div>
@@ -264,7 +291,13 @@ export default function GamePage({ roomId }: GamePageProps) {
               <p className="text-muted text-sm text-center anim-pulse">{t("misc.loading")}</p>
             ) : (
               <>
-                <div className="hand">
+                <div
+                  ref={handRef}
+                  className="hand"
+                  role="group"
+                  aria-label={t("game.your_hand")}
+                  onKeyDown={handleHandKeyDown}
+                >
                   {myHand.map((card, i) => (
                     <WhiteCard
                       key={`${card}-${i}`}

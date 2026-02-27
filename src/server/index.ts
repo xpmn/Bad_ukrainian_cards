@@ -3,6 +3,7 @@ import index from "../index.html";
 import { setServer } from "./ws/broadcast";
 import { handleOpen, handleClose, handleMessage, type WsData } from "./ws/handler";
 import { handleCreateRoom, handleJoinRoom, handleGetRoom } from "./router";
+import { logger } from "./logger";
 
 const PORT = Number(process.env["PORT"] ?? 3000);
 
@@ -78,4 +79,4 @@ const server = serve<WsData>({
 // Store server reference for pub/sub broadcasts
 setServer(server);
 
-console.log(`🚀 Server running at ${server.url}`);
+logger.info(`🚀 Server running at ${server.url}`);
