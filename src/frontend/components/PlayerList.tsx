@@ -55,27 +55,35 @@ export function PlayerList({
           className="player-row"
           style={{
             background: rowBg,
-            borderRadius: "var(--radius-sm)",
             transition: "background 0.3s",
             outline: isRoundWinner ? "1px solid rgba(230,57,70,0.5)" : "none",
           }}
         >
-          <div
-            className="player-avatar"
-            style={{
-              background: p.isConnected ? "#2a2a2a" : "#1a1a1a",
-              opacity: p.isConnected ? 1 : 0.5,
-            }}
-          >
-            {initials(p.name)}
+          {/* Top line: avatar + name + points */}
+          <div className="player-row-top">
+            <div
+              className="player-avatar"
+              style={{
+                background: p.isConnected ? "#2a2a2a" : "#1a1a1a",
+                opacity: p.isConnected ? 1 : 0.5,
+              }}
+            >
+              {initials(p.name)}
+            </div>
+
+            <span className="player-name" style={{ opacity: p.isConnected ? 1 : 0.55 }}>
+              {p.name}
+            </span>
+
+            {phase !== "lobby" && (
+              <span className="player-points" style={{ color: isRoundWinner ? "var(--c-accent)" : "#e63946" }}>
+                {p.points}pts
+              </span>
+            )}
           </div>
 
-          <span className="player-name" style={{ opacity: p.isConnected ? 1 : 0.55 }}>
-            {p.name}
-          </span>
-
-          {/* Badges */}
-          <div className="flex gap-sm" style={{ flexShrink: 0 }}>
+          {/* Bottom line: badges + host controls */}
+          <div className="player-row-bottom">
             {p.id === myPlayerId && (
               <span className="player-badge badge-you">{t("player.you")}</span>
             )}
@@ -97,27 +105,18 @@ export function PlayerList({
             {isRoundWinner && (
               <span className="player-badge" style={{ background: "var(--c-accent)", color: "#fff" }}>🏆</span>
             )}
+            {isHost && p.id !== myPlayerId && (
+              <button
+                className="btn btn-ghost btn-sm"
+                title={t("player.replace_with_bot")}
+                aria-label={`${t("player.replace_with_bot")}: ${p.name}`}
+                onClick={() => handleReplace(p.id)}
+                style={{ fontSize: "0.65rem", padding: "1px 4px", marginLeft: "auto" }}
+              >
+                🤖
+              </button>
+            )}
           </div>
-
-          {/* Host controls: replace non-self players with bot */}
-          {isHost && p.id !== myPlayerId && (
-            <button
-              className="btn btn-ghost btn-sm"
-              title={t("player.replace_with_bot")}
-              aria-label={`${t("player.replace_with_bot")}: ${p.name}`}
-              onClick={() => handleReplace(p.id)}
-              style={{ marginLeft: 4, fontSize: "0.75rem", padding: "2px 6px" }}
-            >
-              🤖
-            </button>
-          )}
-
-          {/* Points badge (non-lobby) */}
-          {phase !== "lobby" && (
-            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: isRoundWinner ? "var(--c-accent)" : "#e63946", marginLeft: 4, flexShrink: 0 }}>
-              {p.points}pts
-            </span>
-          )}
         </div>
         );
       })}

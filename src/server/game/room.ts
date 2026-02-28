@@ -72,6 +72,7 @@ export function createRoom(
     currentRound: 0,
     hetmanId: null,
     currentBlackCard: null,
+    blackCardChoices: [],
     submissions: [],
     blackDeck: [...blackCards],
     whiteDeck: [...whiteCards],

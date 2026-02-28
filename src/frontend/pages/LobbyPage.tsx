@@ -123,7 +123,7 @@ export default function LobbyPage({ roomId }: LobbyPageProps) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 24 }}>
+        <div className="lobby-grid">
           {/* Left: players + actions */}
           <div>
             {/* Player list */}

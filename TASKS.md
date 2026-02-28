@@ -506,9 +506,9 @@ Reusable in both HomePage (create room) and LobbyPage (edit settings):
 ### 4.2 Responsive Design
 **Priority:** P1
 
-- [ ] Mobile-first layout for GamePage (hand scrolls horizontally, cards stack vertically on small screens)
-- [ ] Lobby and Home pages usable on 320 px+ screens
-- [ ] No external CSS frameworks — plain CSS with custom properties
+- [x] Mobile-first layout for GamePage (hand scrolls horizontally, cards stack vertically on small screens)
+- [x] Lobby and Home pages usable on 320 px+ screens
+- [x] No external CSS frameworks — plain CSS with custom properties
 
 ### 4.3 Accessibility
 **Priority:** P2

@@ -25,6 +25,7 @@ import {
 
 const HAND_SIZE         = 10;
 const MIN_PLAYERS       = 3;
+const BLACK_CARD_CHOICES = 4;     // how many black cards the hetman picks from
 const REVEAL_DELAY_MS   = 5_000;   // seconds before round_end is sent after winner
 const ADVANCE_DELAY_MS  = 3_000;   // seconds after round_end before next deal
 const ROOM_LINGER_MS    = 60_000;  // clean up finished rooms after 1 minute
@@ -85,15 +86,18 @@ export function startGame(room: Room): void {
 /**
  * Deal a new round:
  * - Refill every player's hand to HAND_SIZE
- * - Draw a black card
+ * - Draw 4 black cards for the Hetman to choose from
+ * - Phase → "hetmanPicking"
  * - Broadcast round_start + private cards_dealt to each player
- * After this, caller should schedule bot submission turns.
+ * - Send black card choices privately to the Hetman
+ * After this, caller should schedule bot black card pick if hetman is a bot.
  */
 export function dealRound(room: Room): void {
   room.currentRound++;
-  room.phase = "submitting";
+  room.phase = "hetmanPicking";
   room.submissions = [];
   room.currentBlackCard = null;
+  room.blackCardChoices = [];
 
   // Refill white deck if empty
   room.whiteDeck = refillDeck(room.whiteDeck, allWhiteCards);
@@ -107,9 +111,58 @@ export function dealRound(room: Room): void {
     }
   }
 
-  // Draw black card
+  // Draw black cards for hetman to choose from
   room.blackDeck = refillDeck(room.blackDeck, allBlackCards);
-  room.currentBlackCard = room.blackDeck.shift() ?? null;
+  const drawCount = Math.min(BLACK_CARD_CHOICES, room.blackDeck.length);
+  room.blackCardChoices = room.blackDeck.splice(0, drawCount);
+
+  // Broadcast round start to room (no black card yet — hetman is picking)
+  broadcast(room.id, SERVER_EVENTS.ROUND_START, {
+    blackCard: null,
+    hetmanId: room.hetmanId,
+    round: room.currentRound,
+  });
+
+  // Send private hand updates to each player
+  for (const player of room.players) {
+    sendToPlayer(player.id, SERVER_EVENTS.CARDS_DEALT, { hand: player.hand });
+  }
+
+  // Send black card choices privately to the Hetman
+  if (room.hetmanId) {
+    sendToPlayer(room.hetmanId, SERVER_EVENTS.BLACK_CARD_CHOICES, {
+      choices: room.blackCardChoices,
+    });
+  }
+
+  broadcastRoomState(room);
+
+  // Notify listeners that hetman needs to pick (bot scheduling etc.)
+  room.onHetmanPick?.(room);
+}
+
+/**
+ * Hetman picks one of the offered black cards.
+ * Unused cards are returned to the bottom of the deck.
+ * Then the round transitions to "submitting".
+ */
+export function pickBlackCard(room: Room, hetmanId: string, card: string): void {
+  if (room.phase !== "hetmanPicking") throw new Error("NOT_HETMAN_PICKING_PHASE");
+  if (hetmanId !== room.hetmanId) throw new Error("NOT_HETMAN");
+
+  const idx = room.blackCardChoices.indexOf(card);
+  if (idx === -1) throw new Error("CARD_NOT_IN_CHOICES");
+
+  // Set the chosen black card
+  room.currentBlackCard = card;
+
+  // Return un-chosen cards to the bottom of the deck
+  const unused = room.blackCardChoices.filter((_, i) => i !== idx);
+  room.blackDeck.push(...unused);
+  room.blackCardChoices = [];
+
+  // Transition to submitting
+  room.phase = "submitting";
 
   // Start submission timer if configured
   room.submissionDeadline = room.settings.submissionTimeLimitSec
@@ -123,27 +176,20 @@ export function dealRound(room: Room): void {
       const player = room.players.find(p => p.id === playerId);
       if (!player || room.submissions.some(s => s.playerId === playerId)) continue;
       if (player.hand.length > 0) {
-        const card = player.hand[Math.floor(Math.random() * player.hand.length)]!;
-        submitCard(room, playerId, card);
+        const randomCard = player.hand[Math.floor(Math.random() * player.hand.length)]!;
+        submitCard(room, playerId, randomCard);
       }
     }
   });
 
-  // Broadcast round start to room
-  broadcast(room.id, SERVER_EVENTS.ROUND_START, {
+  // Broadcast the picked black card to all
+  broadcast(room.id, SERVER_EVENTS.BLACK_CARD_PICKED, {
     blackCard: room.currentBlackCard,
-    hetmanId: room.hetmanId,
-    round: room.currentRound,
   });
-
-  // Send private hand updates to each player
-  for (const player of room.players) {
-    sendToPlayer(player.id, SERVER_EVENTS.CARDS_DEALT, { hand: player.hand });
-  }
 
   broadcastRoomState(room);
 
-  // Notify listeners that a new round was dealt (bot submission scheduling etc.)
+  // Notify listeners that the round is ready for submissions (bot scheduling)
   room.onDealComplete?.(room);
 }
 

@@ -7,6 +7,7 @@
 export type GamePhase =
   | "lobby"
   | "dealing"
+  | "hetmanPicking"
   | "submitting"
   | "judging"
   | "reveal"
@@ -93,6 +94,7 @@ export interface Room {
   hetmanId: string | null;
   currentBlackCard: string | null;
   submissions: Submission[];
+  blackCardChoices: string[];  // 4 black cards for hetman to pick from
   blackDeck: string[];   // remaining cards
   whiteDeck: string[];   // remaining cards
   createdAt: number;     // Unix ms
@@ -102,7 +104,7 @@ export interface Room {
   /** Active timer ids keyed by purpose, e.g. "submission" | "inactivity" | "session" | "reconnect:{playerId}" */
   timers: Record<string, ReturnType<typeof setTimeout>>;
   /**
-   * Called by engine.ts at the end of dealRound (every round, including auto-advance).
+   * Called by engine.ts after hetman picks a black card and phase transitions to "submitting".
    * Handler.ts sets this once to schedule bot submission turns.
    */
   onDealComplete?: (room: Room) => void;
@@ -111,6 +113,11 @@ export interface Room {
    * Handler.ts sets this once to schedule the bot hetman turn.
    */
   onJudgingStart?: (room: Room) => void;
+  /**
+   * Called by engine.ts when phase is "hetmanPicking" and hetman is a bot.
+   * Handler.ts sets this once to schedule bot black card pick.
+   */
+  onHetmanPick?: (room: Room) => void;
 }
 
 /** Sanitised room data broadcast to all clients. */
@@ -141,9 +148,17 @@ export interface ConnectPayload {
 }
 
 export interface RoundStartPayload {
-  blackCard: string;
+  blackCard: string | null;
   hetmanId: string;
   round: number;
+}
+
+export interface BlackCardChoicesPayload {
+  choices: string[];
+}
+
+export interface BlackCardPickedPayload {
+  blackCard: string;
 }
 
 export interface CardsDealtPayload {

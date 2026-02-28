@@ -24,12 +24,14 @@ import {
   dealRound,
   submitCard,
   selectWinner,
+  pickBlackCard,
   broadcastRoomState,
   endGame,
 } from "../game/engine";
 import {
   scheduleBotActionsAfterDeal,
   scheduleBotHetmanTurn,
+  scheduleBotBlackCardPick,
 } from "../game/bot";
 import {
   resetInactivityTimer,
@@ -56,6 +58,10 @@ function ensureRoomHooks(room: ReturnType<typeof rooms.get> & object): void {
   room.onJudgingStart = (r) => {
     const hetman = r.players.find(p => p.id === r.hetmanId);
     if (hetman?.isBot) scheduleBotHetmanTurn(r, hetman.id);
+  };
+  room.onHetmanPick = (r) => {
+    const hetman = r.players.find(p => p.id === r.hetmanId);
+    if (hetman?.isBot) scheduleBotBlackCardPick(r, hetman.id);
   };
 }
 
@@ -103,6 +109,13 @@ export function handleOpen(ws: ServerWebSocket<WsData>): void {
     broadcastRoomState(room);
   }
 
+  // Re-send black card choices if hetman reconnects during picking phase
+  if (room.phase === "hetmanPicking" && player.id === room.hetmanId && room.blackCardChoices.length > 0) {
+    sendToPlayer(player.id, SERVER_EVENTS.BLACK_CARD_CHOICES, {
+      choices: room.blackCardChoices,
+    });
+  }
+
   // Reset inactivity
   room.lastActivityAt = Date.now();
   resetInactivityTimer(room, () => endGame(room, "inactivity"));
@@ -139,6 +152,10 @@ export function handleClose(ws: ServerWebSocket<WsData>): void {
         // If the replaced player was supposed to submit, schedule bot
         if (currentRoom.phase === "submitting" && bot.id !== currentRoom.hetmanId) {
           scheduleBotActionsAfterDeal(currentRoom);
+        }
+        // If the replaced player was the hetman picking a black card, schedule bot pick
+        if (currentRoom.phase === "hetmanPicking" && bot.id === currentRoom.hetmanId) {
+          scheduleBotBlackCardPick(currentRoom, bot.id);
         }
       } catch {
         // Ignore if player was already replaced
@@ -225,6 +242,9 @@ function dispatch(
       if (room.phase === "judging" && room.hetmanId === bot.id) {
         scheduleBotHetmanTurn(room, bot.id);
       }
+      if (room.phase === "hetmanPicking" && room.hetmanId === bot.id) {
+        scheduleBotBlackCardPick(room, bot.id);
+      }
       break;
     }
 
@@ -250,6 +270,12 @@ function dispatch(
     case CLIENT_EVENTS.SELECT_WINNER: {
       const { submissionId } = assertPayload<{ submissionId: string }>(payload, ["submissionId"]);
       selectWinner(room, playerId, submissionId);
+      break;
+    }
+
+    case CLIENT_EVENTS.PICK_BLACK_CARD: {
+      const { card } = assertPayload<{ card: string }>(payload, ["card"]);
+      pickBlackCard(room, playerId, card);
       break;
     }
 

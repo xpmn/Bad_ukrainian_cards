@@ -54,6 +54,7 @@ export const en: Record<TranslationKey, string> = {
   // ── Game phases ──────────────────────────────────────────
   "phase.lobby":      "Waiting room",
   "phase.dealing":    "Dealing cards",
+  "phase.hetmanPicking": "Card Czar is picking a black card",
   "phase.submitting": "Submit your answer!",
   "phase.judging":    "Card Czar is choosing",
   "phase.reveal":     "Reveal",
@@ -86,6 +87,11 @@ export const en: Record<TranslationKey, string> = {
   "game.final_scores":        "Final scores",
   "game.leave":               "Leave game",
   "game.your_hand":            "Your hand",
+  "game.your_cards":            "Your cards",
+  "game.select_card":           "Select card",
+  "game.pick_black_card":        "Pick a black card for this round",
+  "game.confirm_black_card":     "Play this card",
+  "game.hetman_picking":         "Card Czar is picking a black card…",
 
   // ── Player list ──────────────────────────────────────────
   "player.replace_with_bot":  "Replace with bot",

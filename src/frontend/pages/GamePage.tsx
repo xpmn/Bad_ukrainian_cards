@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef, type KeyboardEvent } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo, type KeyboardEvent } from "react";
 import { t } from "@lib/i18n";
 import { useLang } from "../hooks/useLang";
 import { useGame, loadSession } from "../services/gameStore";
@@ -9,6 +9,26 @@ import { BlackCard } from "../components/Card/BlackCard";
 import { WhiteCard } from "../components/Card/WhiteCard";
 import { JudgingPile, RevealPile } from "../components/SubmissionPile";
 
+// ── Fan layout helpers ─────────────────────────────────────────────────────────
+
+/** Compute per-card rotation + translate for a fan arc */
+function fanTransform(index: number, total: number): { rotate: string; translateX: string; translateY: string } {
+  if (total <= 1) return { rotate: "0deg", translateX: "-50%", translateY: "0px" };
+  const maxSpread = Math.min(2, 20 / total); // very subtle rotation
+  const mid = (total - 1) / 2;
+  const angle = (index - mid) * maxSpread;
+  // Wider horizontal spacing so card text is more readable
+  const xShift = (index - mid) * Math.min(80, 800 / total);
+  // Parabolic vertical drop: edges sit lower than centre
+  const distFromMid = Math.abs(index - mid) / (mid || 1);
+  const yDrop = distFromMid * distFromMid * 40; // up to 40px drop at edges
+  return {
+    rotate: `${angle}deg`,
+    translateX: `calc(-50% + ${xShift}px)`,
+    translateY: `${yDrop}px`,
+  };
+}
+
 // ── GamePage ───────────────────────────────────────────────────────────────────
 
 interface GamePageProps {
@@ -17,10 +37,14 @@ interface GamePageProps {
 
 export default function GamePage({ roomId }: GamePageProps) {
   useLang();
-  const { state, connect, disconnect, selectCard, submitSelectedCard, selectWinner, addToast, sendEvent } = useGame();
-  const { room, myPlayer, myHand, connectionState, selectedCard, lastRoundWinnerId } = state;
+  const { state, connect, disconnect, selectCard, submitSelectedCard, selectWinner, pickBlackCard, addToast, sendEvent } = useGame();
+  const { room, myPlayer, myHand, connectionState, selectedCard, lastRoundWinnerId, blackCardChoices } = state;
 
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
+  /** Index of the keyboard-focused card in the fan (-1 = none) */
+  const [focusedIdx, setFocusedIdx] = useState(-1);
+  /** Selected black card choice during hetmanPicking phase */
+  const [selectedBlackCard, setSelectedBlackCard] = useState<string | null>(null);
 
   // ── Connect on mount ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -36,7 +60,13 @@ export default function GamePage({ roomId }: GamePageProps) {
   // Reset selected submission when phase changes
   useEffect(() => {
     setSelectedSubmissionId(null);
+    setSelectedBlackCard(null);
   }, [room?.phase]);
+
+  // Reset fan focus when hand changes or phase changes
+  useEffect(() => {
+    setFocusedIdx(-1);
+  }, [myHand.length, room?.phase]);
 
   // ── Derived ──────────────────────────────────────────────────────────────────
 
@@ -49,6 +79,8 @@ export default function GamePage({ roomId }: GamePageProps) {
     ? (room?.players.find(p => p.id === myPlayer.id)?.hasSubmitted ?? false)
     : false;
 
+  const canInteractHand = !isHetman && !iSubmitted && phase === "submitting";
+
   const playerNames: Record<string, string> = {};
   players.forEach(p => { playerNames[p.id] = p.name; });
 
@@ -58,32 +90,61 @@ export default function GamePage({ roomId }: GamePageProps) {
   const showReconnecting = connectionState === "reconnecting" || connectionState === "connecting";
 
   // ── Refs ──────────────────────────────────────────────────────────────────────
-  const handRef = useRef<HTMLDivElement>(null);
+  const fanRef = useRef<HTMLDivElement>(null);
+
+  // ── Fan card transforms (memoised) ───────────────────────────────────────────
+  const fanStyles = useMemo(
+    () => myHand.map((_c, i) => fanTransform(i, myHand.length)),
+    [myHand.length],
+  );
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
-  function handleHandKeyDown(e: KeyboardEvent<HTMLDivElement>) {
-    const cards = handRef.current?.querySelectorAll<HTMLElement>("[role='button']");
-    if (!cards || cards.length === 0) return;
+  /** Keyboard handler on the fan container — arrows navigate, Enter activates/submits */
+  /** Navigate to an index and immediately activate that card */
+  function activateByIndex(idx: number) {
+    setFocusedIdx(idx);
+    const card = myHand[idx];
+    if (card) selectCard(card);
+  }
 
-    const focusedIdx = Array.from(cards).findIndex(c => c === document.activeElement);
+  function handleFanKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (!canInteractHand || myHand.length === 0) return;
 
-    let nextIdx = -1;
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
-      nextIdx = focusedIdx < cards.length - 1 ? focusedIdx + 1 : 0;
+      const next = focusedIdx < myHand.length - 1 ? focusedIdx + 1 : 0;
+      activateByIndex(next);
     } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
       e.preventDefault();
-      nextIdx = focusedIdx > 0 ? focusedIdx - 1 : cards.length - 1;
+      const next = focusedIdx > 0 ? focusedIdx - 1 : myHand.length - 1;
+      activateByIndex(next);
     } else if (e.key === "Home") {
       e.preventDefault();
-      nextIdx = 0;
+      activateByIndex(0);
     } else if (e.key === "End") {
       e.preventDefault();
-      nextIdx = cards.length - 1;
+      activateByIndex(myHand.length - 1);
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (selectedCard) submitSelectedCard();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      selectCard(null);
+      setFocusedIdx(-1);
     }
+  }
 
-    if (nextIdx >= 0) cards[nextIdx]?.focus();
+  function handleCardClick(card: string) {
+    if (!canInteractHand) return;
+    if (selectedCard === card) {
+      selectCard(null);
+      setFocusedIdx(-1);
+    } else {
+      const idx = myHand.indexOf(card);
+      selectCard(card);
+      setFocusedIdx(idx);
+    }
   }
 
   function handleSubmit() {
@@ -102,10 +163,15 @@ export default function GamePage({ roomId }: GamePageProps) {
     window.location.hash = "#/";
   }
 
+  function handlePickBlackCard() {
+    if (!selectedBlackCard) return;
+    pickBlackCard(selectedBlackCard);
+    setSelectedBlackCard(null);
+  }
+
   function handlePlayAgain() {
     if (isHost) {
       window.location.hash = `#/lobby/${roomId}`;
-      // Host can start a new game from lobby — disconnect/reconnect is handled by lobby
     } else {
       window.location.hash = "#/";
     }
@@ -161,171 +227,241 @@ export default function GamePage({ roomId }: GamePageProps) {
       )}
 
       <div className="game-page">
-        {/* ── Header ── */}
+        {/* ── Header (full-width navbar, constrained content) ── */}
         <header className="game-header" role="banner">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontWeight: 800, fontSize: "1rem" }}>{t("app.title")}</span>
-            <span className="text-muted text-sm">
-              {t("game.round")} {room?.currentRound ?? 1} {t("game.of")} {room?.settings.maxRounds ?? 10}
-            </span>
-          </div>
-
-          <div style={{ flex: 1, textAlign: "center" }}>
-            <PhaseLabel phase={phase} isHetman={isHetman} />
-            {room?.submissionDeadline && phase === "submitting" && (
-              <HeaderCountdown
-                deadline={room.submissionDeadline}
-                totalSec={room.settings.submissionTimeLimitSec ?? 60}
-              />
-            )}
-          </div>
-
-          <button className="btn btn-ghost btn-sm text-muted" onClick={handleLeave} aria-label={t("game.leave")}>
-            {t("game.leave")}
-          </button>
-        </header>
-
-        {/* ── Main area ── */}
-        <main className="game-main" role="main">
-          {/* Dealing / loading */}
-          {(phase === "dealing" || phase === "lobby" || !room) && (
-            <div className="center-page" style={{ minHeight: "unset" }}>
-              <div className="spinner" />
-              <p className="text-muted text-sm" style={{ marginTop: 12 }}>{t("phase.dealing")}</p>
+          <div className="game-header-inner">
+            <div className="game-header-info">
+              <span className="game-header-title">{t("app.title")}</span>
+              <span className="game-round-badge">
+                {t("game.round")} {room?.currentRound ?? 1} {t("game.of")} {room?.settings.maxRounds ?? 10}
+              </span>
             </div>
-          )}
 
-          {/* Black card */}
-          {room?.currentBlackCard && (
-            <BlackCard text={room.currentBlackCard} animate />
-          )}
-
-          {/* Submitting phase */}
-          {phase === "submitting" && (
-            <div style={{ textAlign: "center" }}>
-              {isHetman ? (
-                <p className="text-muted">{t("game.you_are_hetman")}</p>
-              ) : iSubmitted ? (
-                <p className="text-muted anim-pulse">{t("game.you_submitted")}</p>
-              ) : (
-                <p className="text-accent text-bold">{t("game.your_turn")}</p>
-              )}
-              <p className="text-muted text-sm" style={{ marginTop: 4 }}>
-                {t("game.submitted_count", undefined, { count: String(submittedCount), total: String(totalSubmitters) })}
-              </p>
-              {room?.submissionDeadline && (
-                <CountdownTimer
+            <div className="game-header-center">
+              <PhaseLabel phase={phase} isHetman={isHetman} />
+              {room?.submissionDeadline && phase === "submitting" && (
+                <HeaderCountdown
                   deadline={room.submissionDeadline}
                   totalSec={room.settings.submissionTimeLimitSec ?? 60}
                 />
               )}
             </div>
-          )}
 
-          {/* Judging phase */}
-          {phase === "judging" && room && myPlayer && (
-            <div style={{ width: "100%" }}>
-              {isHetman ? (
-                <p className="text-accent text-bold text-center" style={{ marginBottom: 12 }}>
-                  {t("game.pick_winner")}
-                </p>
-              ) : (
-                <p className="text-muted text-center">{t("game.waiting_hetman")}</p>
-              )}
-
-              <JudgingPile
-                submissions={room.submissions}
-                onSelect={id => setSelectedSubmissionId(id)}
-                isHetman={isHetman}
-                selectedId={selectedSubmissionId ?? undefined}
-              />
-
-              {isHetman && selectedSubmissionId && (
-                <div style={{ textAlign: "center", marginTop: 16 }}>
-                  <button className="btn btn-primary btn-lg" onClick={handlePickWinner}>
-                    {t("game.pick_winner")}
-                  </button>
-                </div>
-              )}
+            <div className="game-header-right">
+              <button className="btn btn-ghost btn-sm text-muted" onClick={handleLeave} aria-label={t("game.leave")}>
+                {t("game.leave")}
+              </button>
             </div>
-          )}
-
-          {/* Reveal phase */}
-          {(phase === "reveal" || phase === "roundEnd") && room && myPlayer && (
-            <div style={{ width: "100%", textAlign: "center" }}>
-              <p className="phase-title">{t("game.winner_round")}</p>
-              <RevealPile
-                revealed={room.revealedSubmissions}
-                playerNames={playerNames}
-                myPlayerId={myPlayer.id}
-              />
-              {phase === "roundEnd" && (
-                <div style={{ marginTop: 24 }}>
-                  <ScoreBoard players={players} myPlayerId={myPlayer.id} title={t("game.scores")} />
-                </div>
-              )}
-            </div>
-          )}
-        </main>
-
-        {/* ── Sidebar: player list ── */}
-        <aside className="game-sidebar" role="complementary" aria-label={t("lobby.players")}>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--c-text-muted)", marginBottom: 8 }}>
-            {t("lobby.players")}
           </div>
-          <PlayerList
-            players={players}
-            myPlayerId={myPlayer?.id ?? ""}
-            hostId={room?.hostId ?? ""}
-            hetmanId={room?.hetmanId ?? null}
-            phase={phase}
-            isHost={isHost}
-            lastRoundWinnerId={lastRoundWinnerId}
-          />
-        </aside>
+        </header>
 
-        {/* ── Hand ── */}
-        {!isHetman && (
-          <div className="game-hand">
-            {myHand.length === 0 ? (
-              <p className="text-muted text-sm text-center anim-pulse">{t("misc.loading")}</p>
-            ) : (
-              <>
-                <div
-                  ref={handRef}
-                  className="hand"
-                  role="group"
-                  aria-label={t("game.your_hand")}
-                  onKeyDown={handleHandKeyDown}
-                >
-                  {myHand.map((card, i) => (
-                    <WhiteCard
-                      key={`${card}-${i}`}
-                      text={card}
-                      state={
-                        iSubmitted       ? "submitted" :
-                        selectedCard === card ? "selected"  : "idle"
-                      }
-                      onClick={
-                        !iSubmitted && phase === "submitting"
-                          ? () => selectCard(selectedCard === card ? null : card)
-                          : undefined
-                      }
-                      animate
-                    />
-                  ))}
-                </div>
-                {phase === "submitting" && !iSubmitted && selectedCard && (
-                  <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <button className="btn btn-primary" onClick={handleSubmit}>
+        {/* ── Body: table + sidebar ── */}
+        <div className="game-body">
+          {/* ── Table (main play area) ── */}
+          <main className="game-table" role="main">
+            {/* Dealing / loading */}
+            {(phase === "dealing" || phase === "lobby" || !room) && (
+              <div className="center-page" style={{ minHeight: "unset" }}>
+                <div className="spinner" />
+                <p className="text-muted text-sm" style={{ marginTop: 12 }}>{t("phase.dealing")}</p>
+              </div>
+            )}
+
+            {/* Hetman picking black card */}
+            {phase === "hetmanPicking" && room && myPlayer && (
+              <div style={{ width: "100%", textAlign: "center" }}>
+                {isHetman ? (
+                  <>
+                    <p className="text-accent text-bold" style={{ marginBottom: 16, fontSize: "1.1rem" }}>
+                      {t("game.pick_black_card")}
+                    </p>
+                    <div className="black-card-choices">
+                      {blackCardChoices.map((card) => (
+                        <div
+                          key={card}
+                          className={`black-card-choice${selectedBlackCard === card ? " black-card-choice--selected" : ""}`}
+                          onClick={() => setSelectedBlackCard(selectedBlackCard === card ? null : card)}
+                        >
+                          <BlackCard text={card} animate />
+                        </div>
+                      ))}
+                    </div>
+                    {selectedBlackCard && (
+                      <div style={{ marginTop: 16 }}>
+                        <button className="btn btn-primary btn-lg" onClick={handlePickBlackCard}>
+                          {t("game.confirm_black_card")}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="center-page" style={{ minHeight: "unset" }}>
+                    <div className="spinner" />
+                    <p className="text-muted" style={{ marginTop: 12 }}>{t("game.hetman_picking")}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Black card + submit action */}
+            {room?.currentBlackCard && (
+              <div className="game-table-center">
+                <BlackCard text={room.currentBlackCard} animate />
+
+                {/* Submit button appears below black card when a card is active */}
+                {canInteractHand && selectedCard && (
+                  <div className="game-submit-action">
+                    <button className="btn btn-primary btn-lg" onClick={handleSubmit}>
                       {t("game.submit")}
                     </button>
-                    <button className="btn btn-ghost btn-sm" style={{ marginLeft: 8 }} onClick={() => selectCard(null)}>
+                    <button className="btn btn-ghost btn-sm" onClick={() => selectCard(null)}>
                       {t("game.cancel")}
                     </button>
                   </div>
                 )}
-              </>
+              </div>
+            )}
+
+            {/* Submitting status */}
+            {phase === "submitting" && (
+              <div style={{ textAlign: "center" }}>
+                {isHetman ? (
+                  <p className="text-muted">{t("game.you_are_hetman")}</p>
+                ) : iSubmitted ? (
+                  <p className="text-muted anim-pulse">{t("game.you_submitted")}</p>
+                ) : (
+                  <p className="text-accent text-bold">{t("game.your_turn")}</p>
+                )}
+                <p className="text-muted text-sm" style={{ marginTop: 4 }}>
+                  {t("game.submitted_count", undefined, { count: String(submittedCount), total: String(totalSubmitters) })}
+                </p>
+                {room?.submissionDeadline && (
+                  <CountdownTimer
+                    deadline={room.submissionDeadline}
+                    totalSec={room.settings.submissionTimeLimitSec ?? 60}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Judging phase */}
+            {phase === "judging" && room && myPlayer && (
+              <div style={{ width: "100%" }}>
+                {isHetman ? (
+                  <p className="text-accent text-bold text-center" style={{ marginBottom: 12 }}>
+                    {t("game.pick_winner")}
+                  </p>
+                ) : (
+                  <p className="text-muted text-center">{t("game.waiting_hetman")}</p>
+                )}
+
+                <JudgingPile
+                  submissions={room.submissions}
+                  onSelect={id => setSelectedSubmissionId(id)}
+                  isHetman={isHetman}
+                  selectedId={selectedSubmissionId ?? undefined}
+                />
+
+                {isHetman && selectedSubmissionId && (
+                  <div style={{ textAlign: "center", marginTop: 16 }}>
+                    <button className="btn btn-primary btn-lg" onClick={handlePickWinner}>
+                      {t("game.pick_winner")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Reveal phase */}
+            {(phase === "reveal" || phase === "roundEnd") && room && myPlayer && (
+              <div style={{ width: "100%", textAlign: "center" }}>
+                <p className="phase-title">{t("game.winner_round")}</p>
+                <RevealPile
+                  revealed={room.revealedSubmissions}
+                  playerNames={playerNames}
+                  myPlayerId={myPlayer.id}
+                />
+                {phase === "roundEnd" && (
+                  <div style={{ marginTop: 24 }}>
+                    <ScoreBoard players={players} myPlayerId={myPlayer.id} title={t("game.scores")} />
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* ── Sidebar: player list ── */}
+          <aside className="game-sidebar" role="complementary" aria-label={t("lobby.players")}>
+            <div className="game-sidebar-title">{t("lobby.players")}</div>
+            <PlayerList
+              players={players}
+              myPlayerId={myPlayer?.id ?? ""}
+              hostId={room?.hostId ?? ""}
+              hetmanId={room?.hetmanId ?? null}
+              phase={phase}
+              isHost={isHost}
+              lastRoundWinnerId={lastRoundWinnerId}
+            />
+          </aside>
+        </div>
+
+        {/* ── Fan hand area ── */}
+        {!isHetman && (
+          <div className="game-hand-area">
+            {myHand.length === 0 ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                <p className="text-muted text-sm anim-pulse">{t("misc.loading")}</p>
+              </div>
+            ) : (
+              <div
+                ref={fanRef}
+                className="fan-hand"
+                role="group"
+                aria-label={t("game.your_hand")}
+                tabIndex={canInteractHand ? 0 : undefined}
+                onKeyDown={canInteractHand ? handleFanKeyDown : undefined}
+              >
+                {myHand.map((card, i) => {
+                  const { rotate, translateX, translateY } = fanStyles[i] ?? { rotate: "0deg", translateX: "-50%", translateY: "0px" };
+                  const isActive  = selectedCard === card;
+                  const isFocused = focusedIdx === i;
+
+                  const wrapperClass = [
+                    "fan-card-wrapper",
+                    isFocused ? "fan-focused" : "",
+                    isActive  ? "fan-active"  : "",
+                  ].filter(Boolean).join(" ");
+
+                  // z-index: left-to-right sequential, bump for focused/active
+                  const total = myHand.length;
+                  let zIdx = i + 1;
+                  if (isFocused) zIdx = total + 1;
+                  if (isActive) zIdx = total + 2;
+
+                  return (
+                    <div
+                      key={`${card}-${i}`}
+                      className={wrapperClass}
+                      style={{
+                        transform: `translateX(${translateX}) translateY(${isActive ? '-60px' : translateY}) rotate(${rotate})`,
+                        zIndex: zIdx,
+                      }}
+                      onClick={() => handleCardClick(card)}
+                      aria-label={card}
+                    >
+                      <WhiteCard
+                        text={card}
+                        state={
+                          iSubmitted  ? "submitted" :
+                          isActive    ? "selected"  : "idle"
+                        }
+                        className="fan-inner-card"
+                        animate
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
@@ -339,6 +475,9 @@ export default function GamePage({ roomId }: GamePageProps) {
 function PhaseLabel({ phase, isHetman }: { phase: string; isHetman: boolean }) {
   useLang();
   const key = `phase.${phase}` as Parameters<typeof t>[0];
+  if (phase === "hetmanPicking" && isHetman) {
+    return <span className="text-accent text-sm">{t("game.pick_black_card")}</span>;
+  }
   if (phase === "submitting" && isHetman) {
     return <span className="text-warning text-sm">{t("game.you_are_hetman")}</span>;
   }

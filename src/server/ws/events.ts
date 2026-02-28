@@ -4,6 +4,7 @@
 export const CLIENT_EVENTS = {
   SUBMIT_CARD: "submit_card",
   SELECT_WINNER: "select_winner",
+  PICK_BLACK_CARD: "pick_black_card",
   START_GAME: "start_game",
   ADD_BOT: "add_bot",
   REMOVE_PLAYER: "remove_player",
@@ -19,6 +20,8 @@ export const SERVER_EVENTS = {
   ROOM_STATE: "room_state",
   ROUND_START: "round_start",
   CARDS_DEALT: "cards_dealt",
+  BLACK_CARD_CHOICES: "black_card_choices",
+  BLACK_CARD_PICKED: "black_card_picked",
   SUBMISSION_RECEIVED: "submission_received",
   ALL_SUBMITTED: "all_submitted",
   WINNER_SELECTED: "winner_selected",

@@ -53,6 +53,7 @@ export const uk = {
   // ── Game phases ──────────────────────────────────────────
   "phase.lobby":      "Зала очікування",
   "phase.dealing":    "Роздача карток",
+  "phase.hetmanPicking": "Гетьман обирає чорну картку",
   "phase.submitting": "Відповідайте!",
   "phase.judging":    "Гетьман обирає",
   "phase.reveal":     "Розкриття",
@@ -85,6 +86,11 @@ export const uk = {
   "game.final_scores":        "Фінальний рахунок",
   "game.leave":               "Вийти з гри",
   "game.your_hand":            "Ваша рука",
+  "game.your_cards":            "Твої карти",
+  "game.select_card":           "Обрати картку",
+  "game.pick_black_card":        "Оберіть чорну картку для цього раунду",
+  "game.confirm_black_card":     "Зіграти цю картку",
+  "game.hetman_picking":         "Гетьман обирає чорну картку…",
 
   // ── Player list ──────────────────────────────────────────
   "player.replace_with_bot":  "Замінити ботом",

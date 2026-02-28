@@ -91,7 +91,7 @@ export function RevealPile({ revealed, playerNames, myPlayerId }: RevealPileProp
         <div key={s.anonymousId} className="submission-card-wrapper">
           <WhiteCard
             text={s.card}
-            state="winner"
+            state={s.isWinner ? "winner" : "idle"}
             animate
           />
           <div style={{ textAlign: "center", marginTop: 8, fontSize: "0.8rem", color: "var(--c-text-muted)" }}>

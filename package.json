@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "tsc": "^2.0.4"
   },
   "devDependencies": {
     "@types/react": "^19",

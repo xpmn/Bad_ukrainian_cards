@@ -72,13 +72,17 @@ export interface GameState {
   selectedCard:       string | null;
   /** playerId of whoever won the most recent round — cleared at start of next round. */
   lastRoundWinnerId:  string | null;
+  /** Black card choices offered to the Hetman during hetmanPicking phase. */
+  blackCardChoices:   string[];
 }
 
 type Action =
   | { type: "SET_STATE"; room: PublicRoom; myPlayer: Omit<Player, "token">; myHand: string[] }
   | { type: "CARDS_DEALT"; hand: string[] }
   | { type: "UPDATE_ROOM"; room: PublicRoom }
-  | { type: "ROUND_START"; blackCard: string; hetmanId: string; round: number }
+  | { type: "ROUND_START"; blackCard: string | null; hetmanId: string; round: number }
+  | { type: "BLACK_CARD_CHOICES"; choices: string[] }
+  | { type: "BLACK_CARD_PICKED"; blackCard: string }
   | { type: "ALL_SUBMITTED"; submissions: AnonymousSubmission[] }
   | { type: "WINNER_SELECTED"; submission: Submission; playerName: string }
   | { type: "ROUND_END"; scores: Score[] }
@@ -102,6 +106,7 @@ const initialState: GameState = {
   toasts:             [],
   selectedCard:       null,
   lastRoundWinnerId:  null,
+  blackCardChoices:   [],
 };
 
 function reducer(state: GameState, action: Action): GameState {
@@ -123,10 +128,12 @@ function reducer(state: GameState, action: Action): GameState {
 
     case "ROUND_START": {
       if (!state.room) return state;
+      const phase = action.blackCard ? "submitting" : "hetmanPicking";
       return {
         ...state,
         selectedCard:      null,
         lastRoundWinnerId: null,
+        blackCardChoices:  [],
         room: {
           ...state.room,
           currentBlackCard: action.blackCard,
@@ -134,7 +141,24 @@ function reducer(state: GameState, action: Action): GameState {
           currentRound:     action.round,
           submissions:      [],
           revealedSubmissions: [],
-          phase:            "submitting",
+          phase,
+        },
+      };
+    }
+
+    case "BLACK_CARD_CHOICES": {
+      return { ...state, blackCardChoices: action.choices };
+    }
+
+    case "BLACK_CARD_PICKED": {
+      if (!state.room) return state;
+      return {
+        ...state,
+        blackCardChoices: [],
+        room: {
+          ...state.room,
+          currentBlackCard: action.blackCard,
+          phase: "submitting",
         },
       };
     }
@@ -302,6 +326,7 @@ interface GameContextValue {
   selectCard: (card: string | null) => void;
   submitSelectedCard: () => void;
   selectWinner: (submissionId: string) => void;
+  pickBlackCard: (card: string) => void;
   addToast: (message: string, type?: Toast["type"]) => void;
   dismissToast: (id: string) => void;
 }
@@ -314,6 +339,8 @@ const EVENTS = {
   ROOM_STATE:             "room_state",
   ROUND_START:            "round_start",
   CARDS_DEALT:            "cards_dealt",
+  BLACK_CARD_CHOICES:     "black_card_choices",
+  BLACK_CARD_PICKED:      "black_card_picked",
   SUBMISSION_RECEIVED:    "submission_received",
   ALL_SUBMITTED:          "all_submitted",
   WINNER_SELECTED:        "winner_selected",
@@ -360,13 +387,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }),
       wsService.on(EVENTS.ROUND_START, raw => {
-        const p = raw as { blackCard: string; hetmanId: string; round: number };
+        const p = raw as { blackCard: string | null; hetmanId: string; round: number };
         dispatch({ type: "ROUND_START", ...p });
         dispatch({ type: "ADD_TOAST", toast: { id: toastId(), message: t("toast.round_start", undefined, { round: String(p.round) }), type: "info" } });
       }),
       wsService.on(EVENTS.CARDS_DEALT, raw => {
         const p = raw as { hand: string[] };
         dispatch({ type: "CARDS_DEALT", hand: p.hand });
+      }),
+      wsService.on(EVENTS.BLACK_CARD_CHOICES, raw => {
+        const p = raw as { choices: string[] };
+        dispatch({ type: "BLACK_CARD_CHOICES", choices: p.choices });
+      }),
+      wsService.on(EVENTS.BLACK_CARD_PICKED, raw => {
+        const p = raw as { blackCard: string };
+        dispatch({ type: "BLACK_CARD_PICKED", blackCard: p.blackCard });
       }),
       wsService.on(EVENTS.ALL_SUBMITTED, raw => {
         const p = raw as { submissions: AnonymousSubmission[] };
@@ -463,6 +498,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     wsService.send("select_winner", { submissionId });
   }, []);
 
+  const pickBlackCard = useCallback((card: string) => {
+    wsService.send("pick_black_card", { card });
+  }, []);
+
   return (
     <GameContext.Provider value={{
       state,
@@ -472,6 +511,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       selectCard,
       submitSelectedCard,
       selectWinner,
+      pickBlackCard,
       addToast,
       dismissToast,
     }}>

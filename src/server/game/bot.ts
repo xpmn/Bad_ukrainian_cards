@@ -6,13 +6,15 @@
  * from here, avoiding circular dependencies.
  */
 import type { Room } from "../../lib/types";
-import { submitCard, selectWinner } from "./engine";
+import { submitCard, selectWinner, pickBlackCard } from "./engine";
 
 // How long bots "think" before acting
 const BOT_SUBMIT_MIN_MS  = 3_000;
 const BOT_SUBMIT_MAX_MS  = 8_000;
 const BOT_JUDGE_MIN_MS   = 5_000;
 const BOT_JUDGE_MAX_MS   = 10_000;
+const BOT_PICK_MIN_MS    = 2_000;
+const BOT_PICK_MAX_MS    = 5_000;
 
 function randomDelay(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -92,4 +94,32 @@ export function scheduleBotActionsAfterDeal(room: Room): void {
     if (player.id === room.hetmanId) continue; // hetman doesn't submit
     scheduleBotTurn(room, player.id);
   }
+}
+
+/**
+ * Schedule the bot Hetman to pick a random black card from the offered choices.
+ * Called via room.onHetmanPick when the hetman is a bot.
+ */
+export function scheduleBotBlackCardPick(room: Room, botId: string): void {
+  // Already scheduled — don't reset.
+  if (room.timers[`bot_pick:${botId}`] !== undefined) return;
+
+  const delay = randomDelay(BOT_PICK_MIN_MS, BOT_PICK_MAX_MS);
+
+  room.timers[`bot_pick:${botId}`] = setTimeout(() => {
+    delete room.timers[`bot_pick:${botId}`];
+
+    if (room.phase !== "hetmanPicking") return;
+    if (room.hetmanId !== botId) return;
+    if (room.blackCardChoices.length === 0) return;
+
+    const card = randomItem(room.blackCardChoices);
+    if (!card) return;
+
+    try {
+      pickBlackCard(room, botId, card);
+    } catch {
+      // Silently ignore
+    }
+  }, delay);
 }

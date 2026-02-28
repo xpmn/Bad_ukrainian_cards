@@ -48,10 +48,10 @@
   --shadow-card: 0 6px 20px rgba(0,0,0,.8);
 
   /* Card dimensions */
-  --card-w:  160px;
-  --card-h:  240px;
-  --card-w-sm: 120px;
-  --card-h-sm: 180px;
+  --card-w:  180px;
+  --card-h:  270px;
+  --card-w-sm: 130px;
+  --card-h-sm: 195px;
 
   /* Transitions */
   --transition: 0.2s ease;
@@ -405,23 +405,38 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .player-row {
   display: flex;
-  align-items: center;
-  gap: var(--sp-sm);
+  flex-direction: column;
+  gap: var(--sp-xs);
   padding: var(--sp-sm) var(--sp-md);
   background: var(--c-bg-surface);
   border-radius: var(--radius-sm);
   border: 1px solid var(--c-border);
 }
 
+.player-row-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  min-width: 0;
+}
+
+.player-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding-left: 40px; /* align with text after avatar */
+}
+
 .player-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: var(--c-bg-elevated);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   flex-shrink: 0;
@@ -429,17 +444,27 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .player-name {
   flex: 1;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.player-points {
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .player-badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
+  font-size: 0.6rem;
+  padding: 1px 5px;
   border-radius: 4px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .badge-host {
@@ -590,52 +615,244 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* ── Game page ──────────────────────────────── */
 
 .game-page {
+  width: 100%;
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 240px;
-  grid-template-rows: 64px 1fr auto;
-  grid-template-areas:
-    "header  header"
-    "main    sidebar"
-    "hand    sidebar";
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
+/* ── Navbar (full-width, constrained content) ─ */
+
 .game-header {
-  grid-area: header;
+  width: 100%;
+  background: var(--c-bg-surface);
+  border-bottom: 1px solid var(--c-border);
+  height: 56px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.game-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--sp-lg);
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--sp-lg);
-  background: var(--c-bg-surface);
-  border-bottom: 1px solid var(--c-border);
-  font-size: 0.9rem;
   gap: var(--sp-md);
 }
 
-.game-main {
-  grid-area: main;
+.game-header-info {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-shrink: 0;
+}
+
+.game-header-title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.game-header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-md);
+  min-width: 0;
+}
+
+.game-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-shrink: 0;
+}
+
+.game-round-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Body area: table + sidebar ───────────── */
+
+.game-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.game-table {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: var(--sp-lg);
-  gap: var(--sp-xl);
+  gap: var(--sp-lg);
   overflow-y: auto;
+  position: relative;
 }
+
+/* Centered area for black card + submit action */
+.game-table-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.game-submit-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-sm);
+  animation: slide-up 0.25s ease both;
+}
+
+/* ── Black card choices (hetman picking) ──── */
+
+.black-card-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-md);
+  padding: var(--sp-md);
+}
+
+.black-card-choice {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-md);
+  position: relative;
+}
+
+.black-card-choice:hover {
+  transform: translateY(-8px) scale(1.03);
+}
+
+.black-card-choice--selected {
+  transform: translateY(-12px) scale(1.05);
+}
+
+.black-card-choice--selected .card {
+  outline: 3px solid var(--c-accent);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+/* ── Sidebar ──────────────────────────────── */
 
 .game-sidebar {
-  grid-area: sidebar;
-  background: var(--c-bg-surface);
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(28, 28, 28, 0.85);
+  backdrop-filter: blur(12px);
   border-left: 1px solid var(--c-border);
   overflow-y: auto;
+  overflow-x: hidden;
   padding: var(--sp-md);
+  z-index: 10;
 }
 
-.game-hand {
-  grid-area: hand;
-  border-top: 1px solid var(--c-border);
-  background: var(--c-bg-surface);
-  padding: var(--sp-md);
+.game-sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-text-muted);
+  margin-bottom: var(--sp-sm);
+}
+
+/* ── Fan hand ─────────────────────────────── */
+
+.game-hand-area {
+  width: 100%;
+  flex-shrink: 0;
+  position: relative;
+  height: 260px;
+  z-index: 15;
+}
+
+.fan-hand {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 320px;
+}
+
+.fan-card-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform-origin: bottom center;
+  transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), z-index 0s;
+  cursor: pointer;
+}
+
+.fan-card-wrapper:hover,
+.fan-card-wrapper.fan-focused {
+  /* z-index controlled via inline style */
+}
+
+/* The card inside the wrapper */
+.fan-card-wrapper .card {
+  transition: transform 0.3s cubic-bezier(.22,.68,0,1.2), box-shadow 0.3s ease;
+}
+
+.fan-card-wrapper:hover .card,
+.fan-card-wrapper.fan-focused .card {
+  transform: translateY(-80px) scale(1.08);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+}
+
+.fan-card-wrapper.fan-active {
+  /* z-index controlled via inline style */
+}
+
+.fan-card-wrapper.fan-active .card {
+  transform: translateY(-60px) scale(1.05);
+  box-shadow: 0 0 40px rgba(230,57,70,0.45), 0 16px 48px rgba(0,0,0,0.85);
+  outline: 3px solid var(--c-accent);
+}
+
+.fan-card-wrapper.fan-active .card::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: var(--radius-card);
+  border: 2px solid var(--c-accent);
+  pointer-events: none;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Focus ring for keyboard nav */
+.fan-card-wrapper:focus-visible .card {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  transform: translateY(-80px) scale(1.08);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+}
+
+/* Suppress WhiteCard's own hover/selected transform inside fan (parent handles it) */
+.fan-card-wrapper .card.selectable:hover,
+.fan-card-wrapper .card.selectable:focus-visible {
+  transform: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.fan-card-wrapper .card.selected {
+  transform: none;
+  box-shadow: none;
+  outline: none;
 }
 
 .status-bar {
@@ -806,23 +1023,240 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* ── Responsive: mobile game layout ─────────── */
 
 @media (max-width: 700px) {
-  .game-page {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "header"
-      "main"
-      "hand"
-      "sidebar";
+  .game-body {
+    flex-direction: column;
   }
 
   .game-sidebar {
+    width: 100%;
     border-left: none;
     border-top: 1px solid var(--c-border);
+    max-height: 180px;
+    overflow-x: hidden;
+    order: 2;
+  }
+
+  .game-header-inner {
+    padding: 0 var(--sp-sm);
+  }
+
+  .game-header-title {
+    display: none;
+  }
+
+  .game-table {
+    padding: var(--sp-md) var(--sp-sm);
+    gap: var(--sp-md);
   }
 
   .card {
-    --card-w: var(--card-w-sm);
-    --card-h: var(--card-h-sm);
+    width: var(--card-w-sm);
+    height: var(--card-h-sm);
+  }
+
+  .card-text {
+    font-size: 0.8rem;
+  }
+
+  .card-text-sm {
+    font-size: 0.7rem;
+  }
+
+  .game-hand-area {
+    height: 200px;
+  }
+
+  .fan-hand {
+    bottom: -50px;
+  }
+
+  .fan-card-wrapper:hover .card,
+  .fan-card-wrapper.fan-focused .card {
+    transform: translateY(-60px) scale(1.05);
+  }
+
+  .fan-card-wrapper.fan-active .card {
+    transform: translateY(-45px) scale(1.04);
+  }
+
+  .submission-pile {
+    gap: var(--sp-sm);
+    padding: var(--sp-sm);
+  }
+
+  .phase-title {
+    font-size: 1.1rem;
+  }
+
+  .game-over-screen {
+    padding: var(--sp-lg) var(--sp-sm);
+  }
+}
+
+/* ── Responsive: lobby page ─────────────────── */
+
+.lobby-grid {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: var(--sp-lg);
+}
+
+@media (max-width: 600px) {
+  .lobby-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lobby-page {
+    padding: var(--sp-lg) var(--sp-sm);
+  }
+
+  .lobby-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-sm);
+    margin-bottom: var(--sp-lg);
+  }
+
+  .room-code-badge {
+    font-size: 1.2rem;
+    padding: var(--sp-xs) var(--sp-sm);
+  }
+}
+
+/* ── Responsive: home page ──────────────────── */
+
+@media (max-width: 540px) {
+  .home-forms {
+    grid-template-columns: 1fr;
+    gap: var(--sp-lg);
+  }
+
+  .home-page {
+    padding: var(--sp-md) var(--sp-sm);
+    gap: var(--sp-lg);
+  }
+
+  .home-form-panel {
+    padding: var(--sp-md);
+  }
+
+  .home-logo h1 {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+  }
+}
+
+/* ── Responsive: very small screens (320px) ── */
+
+@media (max-width: 380px) {
+  :root {
+    --card-w-sm: 100px;
+    --card-h-sm: 150px;
+    --sp-lg: 16px;
+    --sp-xl: 24px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .card {
+    width: var(--card-w-sm);
+    height: var(--card-h-sm);
+    padding: var(--sp-sm);
+  }
+
+  .card-text {
+    font-size: 0.7rem;
+  }
+
+  .card-text-sm {
+    font-size: 0.65rem;
+  }
+
+  .card-logo {
+    font-size: 0.55rem;
+  }
+
+  .btn {
+    font-size: 0.85rem;
+    padding: var(--sp-xs) var(--sp-md);
+  }
+
+  .btn-lg {
+    padding: var(--sp-sm) var(--sp-lg);
+    font-size: 0.95rem;
+  }
+
+  .game-header-inner {
+    padding: 0 var(--sp-xs);
+  }
+
+  .game-hand-area {
+    height: 170px;
+  }
+
+  .fan-hand {
+    bottom: -40px;
+  }
+
+  .player-row {
+    padding: var(--sp-xs) var(--sp-sm);
+  }
+
+  .player-row-bottom {
+    padding-left: 36px;
+  }
+
+  .player-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .player-name {
+    font-size: 0.8rem;
+  }
+
+  .player-badge {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+  }
+
+  .toast-container {
+    right: var(--sp-sm);
+    bottom: var(--sp-sm);
+    left: var(--sp-sm);
+  }
+
+  .toast {
+    max-width: 100%;
+    font-size: 0.8rem;
+  }
+
+  .settings-panel {
+    padding: var(--sp-sm);
+  }
+
+  .scoreboard-row {
+    padding: var(--sp-xs) var(--sp-sm);
+  }
+
+  .scoreboard-name {
+    font-size: 0.8rem;
+  }
+
+  .scoreboard-points {
+    font-size: 0.75rem;
+  }
+
+  .home-form-panel {
+    padding: var(--sp-sm);
+    gap: var(--sp-sm);
+  }
+
+  .input {
+    padding: var(--sp-xs) var(--sp-sm);
+    font-size: 0.9rem;
   }
 }
 

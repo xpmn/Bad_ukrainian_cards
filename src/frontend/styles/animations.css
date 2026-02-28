@@ -39,8 +39,8 @@
 }
 
 @keyframes winner-glow {
-  0%, 100% { box-shadow: 0 0 12px rgba(230,57,70,.3); }
-  50%       { box-shadow: 0 0 40px rgba(230,57,70,.8), 0 0 80px rgba(230,57,70,.4); }
+  0%, 100% { box-shadow: 0 0 12px rgba(240,165,0,.3); }
+  50%       { box-shadow: 0 0 40px rgba(240,165,0,.8), 0 0 80px rgba(240,165,0,.4); }
 }
 
 @keyframes winner-bounce {
@@ -83,7 +83,7 @@
 .anim-fade-in  { animation: fade-in  0.3s ease both; }
 .anim-zoom-in  { animation: zoom-in  0.3s cubic-bezier(.22,.68,0,1.2) both; }
 .anim-flip     { animation: flip-card 0.6s ease both; }
-.anim-winner-glow  { animation: winner-glow 1.5s ease-in-out infinite; }
+.anim-winner-glow  { animation: winner-glow 1.5s ease-in-out infinite; border: 3px solid #f0a500; }
 .anim-winner-float { animation: winner-bounce 1.2s ease-in-out infinite; }
 .anim-shake    { animation: shake 0.4s ease; }
 .anim-pulse    { animation: pulse 1.5s ease-in-out infinite; }
