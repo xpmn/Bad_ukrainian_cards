@@ -171,7 +171,7 @@ export default function GamePage({ roomId }: GamePageProps) {
 
   function handlePlayAgain() {
     if (isHost) {
-      window.location.hash = `#/lobby/${roomId}`;
+      // window.location.hash = `#/lobby/${roomId}`;
     } else {
       window.location.hash = "#/";
     }
@@ -200,9 +200,9 @@ export default function GamePage({ roomId }: GamePageProps) {
           <ScoreBoard players={players} myPlayerId={myPlayer?.id} title={t("game.final_scores")} />
 
           <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-            <button className="btn btn-primary btn-lg" onClick={handlePlayAgain}>
+            {/* <button className="btn btn-primary btn-lg" onClick={handlePlayAgain}>
               {isHost ? t("game.play_again") : t("misc.back")}
-            </button>
+            </button> */}
             <button className="btn btn-ghost" onClick={handleLeave}>{t("game.leave")}</button>
           </div>
         </div>

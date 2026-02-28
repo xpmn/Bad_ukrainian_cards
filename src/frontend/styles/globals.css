@@ -755,11 +755,16 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   flex-shrink: 0;
   background: rgba(28, 28, 28, 0.85);
   backdrop-filter: blur(12px);
-  border-left: 1px solid var(--c-border);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--sp-md);
   z-index: 10;
+  align-self: flex-start;
+  margin: var(--sp-md);
+  max-height: calc(100vh - 160px);
 }
 
 .game-sidebar-title {
@@ -1064,11 +1069,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
   .game-sidebar {
     width: 100%;
-    border-left: none;
+    border: none;
     border-top: 1px solid var(--c-border);
+    border-radius: 0;
+    box-shadow: none;
     max-height: 180px;
     overflow-x: hidden;
     order: 2;
+    align-self: stretch;
+    margin: 0;
   }
 
   .game-header-inner {
