@@ -616,6 +616,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .game-page {
   width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -786,6 +787,40 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   left: 50%;
   transform: translateX(-50%);
   height: 320px;
+}
+
+/* Desktop arrow hints */
+.fan-arrow {
+  display: none;
+}
+
+@media (min-width: 701px) {
+  .fan-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 20%;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--c-bg-elevated);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-muted);
+    font-size: 0.9rem;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0.7;
+    animation: fan-arrow-pulse 2s ease-in-out infinite;
+  }
+
+  .fan-arrow-left  { left: var(--sp-md); }
+  .fan-arrow-right { right: var(--sp-md); }
+
+  @keyframes fan-arrow-pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50%      { opacity: 0.9; transform: scale(1.1); }
+  }
 }
 
 .fan-card-wrapper {
@@ -1059,24 +1094,50 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   }
 
   .card-text-sm {
-    font-size: 0.7rem;
+    font-size: 0.9rem;
   }
 
+  /* Mobile: horizontal scroll instead of fan */
   .game-hand-area {
-    height: 200px;
+    height: auto;
+    overflow: hidden;
+    max-width: 100vw;
   }
 
   .fan-hand {
-    bottom: -50px;
+    position: static;
+    transform: none;
+    display: flex;
+    gap: var(--sp-sm);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: var(--sp-sm) var(--sp-md);
+    padding-top: 20px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: auto;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .fan-card-wrapper {
+    position: static !important;
+    transform: none !important;
+    flex-shrink: 0;
+    scroll-snap-align: center;
   }
 
   .fan-card-wrapper:hover .card,
   .fan-card-wrapper.fan-focused .card {
-    transform: translateY(-60px) scale(1.05);
+    transform: translateY(-12px) scale(1.03);
   }
 
   .fan-card-wrapper.fan-active .card {
-    transform: translateY(-45px) scale(1.04);
+    transform: translateY(-16px) scale(1.04);
+  }
+
+  .fan-card-wrapper.fan-active .card::after {
+    inset: -3px;
   }
 
   .submission-pile {
@@ -1192,11 +1253,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   }
 
   .game-hand-area {
-    height: 170px;
+    height: auto;
   }
 
   .fan-hand {
-    bottom: -40px;
+    position: static;
+    transform: none;
+    gap: var(--sp-xs);
+    padding: var(--sp-xs) var(--sp-sm);
   }
 
   .player-row {

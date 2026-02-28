@@ -413,15 +413,20 @@ export default function GamePage({ roomId }: GamePageProps) {
                 <p className="text-muted text-sm anim-pulse">{t("misc.loading")}</p>
               </div>
             ) : (
-              <div
-                ref={fanRef}
-                className="fan-hand"
-                role="group"
-                aria-label={t("game.your_hand")}
-                tabIndex={canInteractHand ? 0 : undefined}
-                onKeyDown={canInteractHand ? handleFanKeyDown : undefined}
-              >
-                {myHand.map((card, i) => {
+              <>
+                {/* Desktop arrow hints */}
+                {canInteractHand && (
+                  <div className="fan-arrow fan-arrow-left" aria-hidden="true">◀</div>
+                )}
+                <div
+                  ref={fanRef}
+                  className="fan-hand"
+                  role="group"
+                  aria-label={t("game.your_hand")}
+                  tabIndex={canInteractHand ? 0 : undefined}
+                  onKeyDown={canInteractHand ? handleFanKeyDown : undefined}
+                >
+                  {myHand.map((card, i) => {
                   const { rotate, translateX, translateY } = fanStyles[i] ?? { rotate: "0deg", translateX: "-50%", translateY: "0px" };
                   const isActive  = selectedCard === card;
                   const isFocused = focusedIdx === i;
@@ -461,7 +466,11 @@ export default function GamePage({ roomId }: GamePageProps) {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+                {canInteractHand && (
+                  <div className="fan-arrow fan-arrow-right" aria-hidden="true">▶</div>
+                )}
+              </>
             )}
           </div>
         )}
